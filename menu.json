@@ -1,91 +1,455 @@
 {
   "restaurant": {
     "name": "GUSTU",
-    "tagline_ar": "بيتزا وفطير",
+    "tagline_ar": "Ø¨ÙØªØ²Ø§ ÙÙØ·ÙØ±",
     "tagline_en": "Pizza & Fetter",
     "phone": "",
     "address_ar": "",
     "address_en": "",
-    "logo_emoji": "🍕",
+    "logo_emoji": "ð",
     "primary_color": "#C0392B",
     "accent_color": "#E67E22"
   },
-  "last_updated": "2025-06-24",
+  "last_updated": "2026-06-24",
   "categories": [
     {
       "id": "pizza",
-      "name_ar": "بيتزا",
+      "name_ar": "Ø¨ÙØªØ²Ø§",
       "name_en": "Pizza",
-      "emoji": "🍕",
+      "emoji": "ð",
       "items": [
-        { "name_ar": "بيتزا مارغريتا وسط",      "name_en": "Margherita Pizza (Medium)", "price": 130, "desc_ar": "عجينة طازجة، صلصة طماطم، جبنة موزاريلا",         "desc_en": "Fresh dough, tomato sauce, mozzarella cheese", "tag": "" },
-        { "name_ar": "بيتزا مارغريتا كبير",      "name_en": "Margherita Pizza (Large)",  "price": 160, "desc_ar": "عجينة طازجة، صلصة طماطم، جبنة موزاريلا",         "desc_en": "Fresh dough, tomato sauce, mozzarella cheese", "tag": "" },
-        { "name_ar": "بيتزا دجاج وسط",           "name_en": "Chicken Pizza (Medium)",    "price": 160, "desc_ar": "دجاج مشوي، فلفل، صلصة طماطم، موزاريلا",        "desc_en": "Grilled chicken, peppers, tomato sauce, mozzarella", "tag": "popular" },
-        { "name_ar": "بيتزا دجاج كبير",          "name_en": "Chicken Pizza (Large)",     "price": 190, "desc_ar": "دجاج مشوي، فلفل، صلصة طماطم، موزاريلا",        "desc_en": "Grilled chicken, peppers, tomato sauce, mozzarella", "tag": "popular" },
-        { "name_ar": "بيتزا خضار وسط",           "name_en": "Veggie Pizza (Medium)",     "price": 130, "desc_ar": "فلفل ملون، مشروم، زيتون، موزاريلا",           "desc_en": "Bell peppers, mushrooms, olives, mozzarella", "tag": "" },
-        { "name_ar": "بيتزا خضار كبير",          "name_en": "Veggie Pizza (Large)",      "price": 160, "desc_ar": "فلفل ملون، مشروم، زيتون، موزاريلا",           "desc_en": "Bell peppers, mushrooms, olives, mozzarella", "tag": "" },
-        { "name_ar": "بيتزا مشكل لحوم وسط",     "name_en": "Mixed Meat Pizza (Medium)", "price": 120, "desc_ar": "لحمة، فراخ، سجق، موزاريلا",                   "desc_en": "Beef, chicken, sausage, mozzarella", "tag": "" },
-        { "name_ar": "بيتزا مشكل لحوم كبير",    "name_en": "Mixed Meat Pizza (Large)",  "price": 180, "desc_ar": "لحمة، فراخ، سجق، موزاريلا",                   "desc_en": "Beef, chicken, sausage, mozzarella", "tag": "" },
-        { "name_ar": "بيتزا بسطرمة وسط",        "name_en": "Pastrami Pizza (Medium)",   "price": 190, "desc_ar": "بسطرمة، موزاريلا، صلصة طماطم",               "desc_en": "Pastrami, mozzarella, tomato sauce", "tag": "new" },
-        { "name_ar": "بيتزا بسطرمة كبير",       "name_en": "Pastrami Pizza (Large)",    "price": 220, "desc_ar": "بسطرمة، موزاريلا، صلصة طماطم",               "desc_en": "Pastrami, mozzarella, tomato sauce", "tag": "new" },
-        { "name_ar": "بيتزا سجق وسط",           "name_en": "Sausage Pizza (Medium)",    "price": 170, "desc_ar": "سجق، موزاريلا، صلصة طماطم",                  "desc_en": "Sausage, mozzarella, tomato sauce", "tag": "" },
-        { "name_ar": "بيتزا سجق كبير",          "name_en": "Sausage Pizza (Large)",     "price": 200, "desc_ar": "سجق، موزاريلا، صلصة طماطم",                  "desc_en": "Sausage, mozzarella, tomato sauce", "tag": "" },
-        { "name_ar": "بيتزا هوت دوج وسط",      "name_en": "Hot Dog Pizza (Medium)",    "price": 170, "desc_ar": "سوسيس، موزاريلا، صلصة طماطم",                "desc_en": "Hotdog, mozzarella, tomato sauce", "tag": "" },
-        { "name_ar": "بيتزا هوت دوج كبير",     "name_en": "Hot Dog Pizza (Large)",     "price": 200, "desc_ar": "سوسيس، موزاريلا، صلصة طماطم",                "desc_en": "Hotdog, mozzarella, tomato sauce", "tag": "" },
-        { "name_ar": "بيتزا سلامي وسط",         "name_en": "Salami Pizza (Medium)",     "price": 170, "desc_ar": "سلامي، موزاريلا، صلصة طماطم",                "desc_en": "Salami, mozzarella, tomato sauce", "tag": "" },
-        { "name_ar": "بيتزا سلامي كبير",        "name_en": "Salami Pizza (Large)",      "price": 200, "desc_ar": "سلامي، موزاريلا، صلصة طماطم",                "desc_en": "Salami, mozzarella, tomato sauce", "tag": "" },
-        { "name_ar": "بيتزا تونة وسط",          "name_en": "Tuna Pizza (Medium)",       "price": 190, "desc_ar": "تونة، موزاريلا، فلفل، زيتون",               "desc_en": "Tuna, mozzarella, peppers, olives", "tag": "" },
-        { "name_ar": "بيتزا تونة كبير",         "name_en": "Tuna Pizza (Large)",        "price": 210, "desc_ar": "تونة، موزاريلا، فلفل، زيتون",               "desc_en": "Tuna, mozzarella, peppers, olives", "tag": "" }
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ÙØ§Ø±ØºØ±ÙØªØ§ ÙØ³Ø·",
+          "name_en": "Margherita Pizza (Medium)",
+          "price": 130,
+          "desc_ar": "Ø¹Ø¬ÙÙØ© Ø·Ø§Ø²Ø¬Ø©Ø ØµÙØµØ© Ø·ÙØ§Ø·ÙØ Ø¬Ø¨ÙØ© ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Fresh dough, tomato sauce, mozzarella cheese",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ÙØ§Ø±ØºØ±ÙØªØ§ ÙØ¨ÙØ±",
+          "name_en": "Margherita Pizza (Large)",
+          "price": 160,
+          "desc_ar": "Ø¹Ø¬ÙÙØ© Ø·Ø§Ø²Ø¬Ø©Ø ØµÙØµØ© Ø·ÙØ§Ø·ÙØ Ø¬Ø¨ÙØ© ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Fresh dough, tomato sauce, mozzarella cheese",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø¯Ø¬Ø§Ø¬ ÙØ³Ø·",
+          "name_en": "Chicken Pizza (Medium)",
+          "price": 160,
+          "desc_ar": "Ø¯Ø¬Ø§Ø¬ ÙØ´ÙÙØ ÙÙÙÙØ ØµÙØµØ© Ø·ÙØ§Ø·ÙØ ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Grilled chicken, peppers, tomato sauce, mozzarella",
+          "tag": "popular"
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø¯Ø¬Ø§Ø¬ ÙØ¨ÙØ±",
+          "name_en": "Chicken Pizza (Large)",
+          "price": 190,
+          "desc_ar": "Ø¯Ø¬Ø§Ø¬ ÙØ´ÙÙØ ÙÙÙÙØ ØµÙØµØ© Ø·ÙØ§Ø·ÙØ ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Grilled chicken, peppers, tomato sauce, mozzarella",
+          "tag": "popular"
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø®Ø¶Ø§Ø± ÙØ³Ø·",
+          "name_en": "Veggie Pizza (Medium)",
+          "price": 130,
+          "desc_ar": "ÙÙÙÙ ÙÙÙÙØ ÙØ´Ø±ÙÙØ Ø²ÙØªÙÙØ ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Bell peppers, mushrooms, olives, mozzarella",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø®Ø¶Ø§Ø± ÙØ¨ÙØ±",
+          "name_en": "Veggie Pizza (Large)",
+          "price": 160,
+          "desc_ar": "ÙÙÙÙ ÙÙÙÙØ ÙØ´Ø±ÙÙØ Ø²ÙØªÙÙØ ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Bell peppers, mushrooms, olives, mozzarella",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ÙØ´ÙÙ ÙØ­ÙÙ ÙØ³Ø·",
+          "name_en": "Mixed Meat Pizza (Medium)",
+          "price": 120,
+          "desc_ar": "ÙØ­ÙØ©Ø ÙØ±Ø§Ø®Ø Ø³Ø¬ÙØ ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Beef, chicken, sausage, mozzarella",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ÙØ´ÙÙ ÙØ­ÙÙ ÙØ¨ÙØ±",
+          "name_en": "Mixed Meat Pizza (Large)",
+          "price": 180,
+          "desc_ar": "ÙØ­ÙØ©Ø ÙØ±Ø§Ø®Ø Ø³Ø¬ÙØ ÙÙØ²Ø§Ø±ÙÙØ§",
+          "desc_en": "Beef, chicken, sausage, mozzarella",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø¨Ø³Ø·Ø±ÙØ© ÙØ³Ø·",
+          "name_en": "Pastrami Pizza (Medium)",
+          "price": 190,
+          "desc_ar": "Ø¨Ø³Ø·Ø±ÙØ©Ø ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Pastrami, mozzarella, tomato sauce",
+          "tag": "new"
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø¨Ø³Ø·Ø±ÙØ© ÙØ¨ÙØ±",
+          "name_en": "Pastrami Pizza (Large)",
+          "price": 220,
+          "desc_ar": "Ø¨Ø³Ø·Ø±ÙØ©Ø ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Pastrami, mozzarella, tomato sauce",
+          "tag": "new"
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø³Ø¬Ù ÙØ³Ø·",
+          "name_en": "Sausage Pizza (Medium)",
+          "price": 170,
+          "desc_ar": "Ø³Ø¬ÙØ ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Sausage, mozzarella, tomato sauce",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø³Ø¬Ù ÙØ¨ÙØ±",
+          "name_en": "Sausage Pizza (Large)",
+          "price": 200,
+          "desc_ar": "Ø³Ø¬ÙØ ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Sausage, mozzarella, tomato sauce",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ÙÙØª Ø¯ÙØ¬ ÙØ³Ø·",
+          "name_en": "Hot Dog Pizza (Medium)",
+          "price": 170,
+          "desc_ar": "Ø³ÙØ³ÙØ³Ø ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Hotdog, mozzarella, tomato sauce",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ÙÙØª Ø¯ÙØ¬ ÙØ¨ÙØ±",
+          "name_en": "Hot Dog Pizza (Large)",
+          "price": 200,
+          "desc_ar": "Ø³ÙØ³ÙØ³Ø ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Hotdog, mozzarella, tomato sauce",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø³ÙØ§ÙÙ ÙØ³Ø·",
+          "name_en": "Salami Pizza (Medium)",
+          "price": 170,
+          "desc_ar": "Ø³ÙØ§ÙÙØ ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Salami, mozzarella, tomato sauce",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ Ø³ÙØ§ÙÙ ÙØ¨ÙØ±",
+          "name_en": "Salami Pizza (Large)",
+          "price": 200,
+          "desc_ar": "Ø³ÙØ§ÙÙØ ÙÙØ²Ø§Ø±ÙÙØ§Ø ØµÙØµØ© Ø·ÙØ§Ø·Ù",
+          "desc_en": "Salami, mozzarella, tomato sauce",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ØªÙÙØ© ÙØ³Ø·",
+          "name_en": "Tuna Pizza (Medium)",
+          "price": 190,
+          "desc_ar": "ØªÙÙØ©Ø ÙÙØ²Ø§Ø±ÙÙØ§Ø ÙÙÙÙØ Ø²ÙØªÙÙ",
+          "desc_en": "Tuna, mozzarella, peppers, olives",
+          "tag": ""
+        },
+        {
+          "name_ar": "Ø¨ÙØªØ²Ø§ ØªÙÙØ© ÙØ¨ÙØ±",
+          "name_en": "Tuna Pizza (Large)",
+          "price": 210,
+          "desc_ar": "ØªÙÙØ©Ø ÙÙØ²Ø§Ø±ÙÙØ§Ø ÙÙÙÙØ Ø²ÙØªÙÙ",
+          "desc_en": "Tuna, mozzarella, peppers, olives",
+          "tag": ""
+        }
       ]
     },
     {
       "id": "fetter",
-      "name_ar": "فطير",
+      "name_ar": "ÙØ·ÙØ±",
       "name_en": "Fetter",
-      "emoji": "🥐",
+      "emoji": "ð¥",
       "items": [
-        { "name_ar": "فطير مشلتت سادة وسط",     "name_en": "Plain Fetter (Medium)",         "price": 100, "desc_ar": "عجينة فطير مشلتت بالسمن البلدي",         "desc_en": "Layered pastry with butter", "tag": "" },
-        { "name_ar": "فطير مشلتت سادة كبير",    "name_en": "Plain Fetter (Large)",          "price": 150, "desc_ar": "عجينة فطير مشلتت بالسمن البلدي",         "desc_en": "Layered pastry with butter", "tag": "" },
-        { "name_ar": "فطير بالعسل والقشطة وسط", "name_en": "Honey & Cream Fetter (Medium)", "price": 190, "desc_ar": "فطير بالعسل والقشطة الطازجة",             "desc_en": "Fetter with honey and fresh cream", "tag": "popular" },
-        { "name_ar": "فطير بالعسل والقشطة كبير","name_en": "Honey & Cream Fetter (Large)",  "price": 230, "desc_ar": "فطير بالعسل والقشطة الطازجة",             "desc_en": "Fetter with honey and fresh cream", "tag": "popular" },
-        { "name_ar": "فطير باللحمة وسط",        "name_en": "Beef Fetter (Medium)",          "price": 170, "desc_ar": "فطير باللحمة المفرومة والتوابل",           "desc_en": "Fetter with spiced minced beef", "tag": "" },
-        { "name_ar": "فطير باللحمة كبير",       "name_en": "Beef Fetter (Large)",           "price": 200, "desc_ar": "فطير باللحمة المفرومة والتوابل",           "desc_en": "Fetter with spiced minced beef", "tag": "" },
-        { "name_ar": "فطير بالفراخ وسط",        "name_en": "Chicken Fetter (Medium)",       "price": 170, "desc_ar": "فطير بصدور الفراخ المشوية",               "desc_en": "Fetter with grilled chicken breast", "tag": "" },
-        { "name_ar": "فطير بالفراخ كبير",       "name_en": "Chicken Fetter (Large)",        "price": 200, "desc_ar": "فطير بصدور الفراخ المشوية",               "desc_en": "Fetter with grilled chicken breast", "tag": "" },
-        { "name_ar": "فطير بالسجق وسط",         "name_en": "Sausage Fetter (Medium)",       "price": 170, "desc_ar": "فطير بالسجق المشوي",                     "desc_en": "Fetter with grilled sausage", "tag": "" },
-        { "name_ar": "فطير بالسجق كبير",        "name_en": "Sausage Fetter (Large)",        "price": 200, "desc_ar": "فطير بالسجق المشوي",                     "desc_en": "Fetter with grilled sausage", "tag": "" },
-        { "name_ar": "فطير بالسوسيس وسط",       "name_en": "Hotdog Fetter (Medium)",        "price": 170, "desc_ar": "فطير بالسوسيس والجبنة",                  "desc_en": "Fetter with hotdog and cheese", "tag": "" },
-        { "name_ar": "فطير بالسوسيس كبير",      "name_en": "Hotdog Fetter (Large)",         "price": 200, "desc_ar": "فطير بالسوسيس والجبنة",                  "desc_en": "Fetter with hotdog and cheese", "tag": "" },
-        { "name_ar": "فطير مشكل لحوم وسط",     "name_en": "Mixed Meat Fetter (Medium)",    "price": 190, "desc_ar": "فطير بمشكل اللحوم والدواجن",              "desc_en": "Fetter with mixed meats and poultry", "tag": "" },
-        { "name_ar": "فطير مشكل لحوم كبير",    "name_en": "Mixed Meat Fetter (Large)",     "price": 210, "desc_ar": "فطير بمشكل اللحوم والدواجن",              "desc_en": "Fetter with mixed meats and poultry", "tag": "" },
-        { "name_ar": "فطير بالتونة وسط",        "name_en": "Tuna Fetter (Medium)",          "price": 190, "desc_ar": "فطير بالتونة والخضار",                   "desc_en": "Fetter with tuna and vegetables", "tag": "" },
-        { "name_ar": "فطير بالتونة كبير",       "name_en": "Tuna Fetter (Large)",           "price": 210, "desc_ar": "فطير بالتونة والخضار",                   "desc_en": "Fetter with tuna and vegetables", "tag": "" },
-        { "name_ar": "فطير جبن مشكل وسط",      "name_en": "Mixed Cheese Fetter (Medium)", "price": 150, "desc_ar": "فطير بمزيج الجبن المشكل",                 "desc_en": "Fetter with mixed cheese blend", "tag": "" },
-        { "name_ar": "فطير جبن مشكل كبير",     "name_en": "Mixed Cheese Fetter (Large)",  "price": 180, "desc_ar": "فطير بمزيج الجبن المشكل",                 "desc_en": "Fetter with mixed cheese blend", "tag": "" },
-        { "name_ar": "فطير كرافت وسط",          "name_en": "Kraft Fetter (Medium)",         "price": 150, "desc_ar": "فطير بجبنة الكرافت المذابة",              "desc_en": "Fetter with melted kraft cheese", "tag": "" },
-        { "name_ar": "فطير كرافت كبير",         "name_en": "Kraft Fetter (Large)",          "price": 180, "desc_ar": "فطير بجبنة الكرافت المذابة",              "desc_en": "Fetter with melted kraft cheese", "tag": "" },
-        { "name_ar": "فطير كاستر وسط",          "name_en": "Custard Fetter (Medium)",       "price": 100, "desc_ar": "فطير بكريمة الكاسترد",                   "desc_en": "Fetter with custard cream", "tag": "" },
-        { "name_ar": "فطير كاستر كبير",         "name_en": "Custard Fetter (Large)",        "price": 130, "desc_ar": "فطير بكريمة الكاسترد",                   "desc_en": "Fetter with custard cream", "tag": "" },
-        { "name_ar": "فطير شيكولاته وسط",       "name_en": "Chocolate Fetter (Medium)",     "price": 130, "desc_ar": "فطير بالشيكولاتة البيضاء",               "desc_en": "Fetter with white chocolate", "tag": "" },
-        { "name_ar": "فطير شيكولاته كبير",      "name_en": "Chocolate Fetter (Large)",      "price": 150, "desc_ar": "فطير بالشيكولاتة البيضاء",               "desc_en": "Fetter with white chocolate", "tag": "" },
-        { "name_ar": "فطير لوتس وسط",           "name_en": "Lotus Fetter (Medium)",         "price": 130, "desc_ar": "فطير بكريمة اللوتس",                     "desc_en": "Fetter with lotus cream", "tag": "popular" },
-        { "name_ar": "فطير لوتس كبير",          "name_en": "Lotus Fetter (Large)",          "price": 150, "desc_ar": "فطير بكريمة اللوتس",                     "desc_en": "Fetter with lotus cream", "tag": "popular" },
-        { "name_ar": "فطير شيكولاته بندق وسط",  "name_en": "Nutella Fetter (Medium)",       "price": 150, "desc_ar": "فطير بشيكولاتة النوتيلا",                "desc_en": "Fetter with Nutella chocolate", "tag": "" },
-        { "name_ar": "فطير شيكولاته بندق كبير", "name_en": "Nutella Fetter (Large)",        "price": 170, "desc_ar": "فطير بشيكولاتة النوتيلا",                "desc_en": "Fetter with Nutella chocolate", "tag": "" },
-        { "name_ar": "فطير بغاشة وسط",          "name_en": "Baghasha Fetter (Medium)",      "price": 100, "desc_ar": "فطير بغاشة تقليدي",                      "desc_en": "Traditional baghasha fetter", "tag": "" },
-        { "name_ar": "فطير بغاشة كبير",         "name_en": "Baghasha Fetter (Large)",       "price": 120, "desc_ar": "فطير بغاشة تقليدي",                      "desc_en": "Traditional baghasha fetter", "tag": "" }
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ´ÙØªØª Ø³Ø§Ø¯Ø© ÙØ³Ø·",
+          "name_en": "Plain Fetter (Medium)",
+          "price": 100,
+          "desc_ar": "Ø¹Ø¬ÙÙØ© ÙØ·ÙØ± ÙØ´ÙØªØª Ø¨Ø§ÙØ³ÙÙ Ø§ÙØ¨ÙØ¯Ù",
+          "desc_en": "Layered pastry with butter",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ´ÙØªØª Ø³Ø§Ø¯Ø© ÙØ¨ÙØ±",
+          "name_en": "Plain Fetter (Large)",
+          "price": 150,
+          "desc_ar": "Ø¹Ø¬ÙÙØ© ÙØ·ÙØ± ÙØ´ÙØªØª Ø¨Ø§ÙØ³ÙÙ Ø§ÙØ¨ÙØ¯Ù",
+          "desc_en": "Layered pastry with butter",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ¹Ø³Ù ÙØ§ÙÙØ´Ø·Ø© ÙØ³Ø·",
+          "name_en": "Honey & Cream Fetter (Medium)",
+          "price": 190,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ¹Ø³Ù ÙØ§ÙÙØ´Ø·Ø© Ø§ÙØ·Ø§Ø²Ø¬Ø©",
+          "desc_en": "Fetter with honey and fresh cream",
+          "tag": "popular"
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ¹Ø³Ù ÙØ§ÙÙØ´Ø·Ø© ÙØ¨ÙØ±",
+          "name_en": "Honey & Cream Fetter (Large)",
+          "price": 230,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ¹Ø³Ù ÙØ§ÙÙØ´Ø·Ø© Ø§ÙØ·Ø§Ø²Ø¬Ø©",
+          "desc_en": "Fetter with honey and fresh cream",
+          "tag": "popular"
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙÙØ­ÙØ© ÙØ³Ø·",
+          "name_en": "Beef Fetter (Medium)",
+          "price": 170,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙÙØ­ÙØ© Ø§ÙÙÙØ±ÙÙØ© ÙØ§ÙØªÙØ§Ø¨Ù",
+          "desc_en": "Fetter with spiced minced beef",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙÙØ­ÙØ© ÙØ¨ÙØ±",
+          "name_en": "Beef Fetter (Large)",
+          "price": 200,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙÙØ­ÙØ© Ø§ÙÙÙØ±ÙÙØ© ÙØ§ÙØªÙØ§Ø¨Ù",
+          "desc_en": "Fetter with spiced minced beef",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙÙØ±Ø§Ø® ÙØ³Ø·",
+          "name_en": "Chicken Fetter (Medium)",
+          "price": 170,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ØµØ¯ÙØ± Ø§ÙÙØ±Ø§Ø® Ø§ÙÙØ´ÙÙØ©",
+          "desc_en": "Fetter with grilled chicken breast",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙÙØ±Ø§Ø® ÙØ¨ÙØ±",
+          "name_en": "Chicken Fetter (Large)",
+          "price": 200,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ØµØ¯ÙØ± Ø§ÙÙØ±Ø§Ø® Ø§ÙÙØ´ÙÙØ©",
+          "desc_en": "Fetter with grilled chicken breast",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³Ø¬Ù ÙØ³Ø·",
+          "name_en": "Sausage Fetter (Medium)",
+          "price": 170,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³Ø¬Ù Ø§ÙÙØ´ÙÙ",
+          "desc_en": "Fetter with grilled sausage",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³Ø¬Ù ÙØ¨ÙØ±",
+          "name_en": "Sausage Fetter (Large)",
+          "price": 200,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³Ø¬Ù Ø§ÙÙØ´ÙÙ",
+          "desc_en": "Fetter with grilled sausage",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³ÙØ³ÙØ³ ÙØ³Ø·",
+          "name_en": "Hotdog Fetter (Medium)",
+          "price": 170,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³ÙØ³ÙØ³ ÙØ§ÙØ¬Ø¨ÙØ©",
+          "desc_en": "Fetter with hotdog and cheese",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³ÙØ³ÙØ³ ÙØ¨ÙØ±",
+          "name_en": "Hotdog Fetter (Large)",
+          "price": 200,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ³ÙØ³ÙØ³ ÙØ§ÙØ¬Ø¨ÙØ©",
+          "desc_en": "Fetter with hotdog and cheese",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ´ÙÙ ÙØ­ÙÙ ÙØ³Ø·",
+          "name_en": "Mixed Meat Fetter (Medium)",
+          "price": 190,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ´ÙÙ Ø§ÙÙØ­ÙÙ ÙØ§ÙØ¯ÙØ§Ø¬Ù",
+          "desc_en": "Fetter with mixed meats and poultry",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ´ÙÙ ÙØ­ÙÙ ÙØ¨ÙØ±",
+          "name_en": "Mixed Meat Fetter (Large)",
+          "price": 210,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ´ÙÙ Ø§ÙÙØ­ÙÙ ÙØ§ÙØ¯ÙØ§Ø¬Ù",
+          "desc_en": "Fetter with mixed meats and poultry",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØªÙÙØ© ÙØ³Ø·",
+          "name_en": "Tuna Fetter (Medium)",
+          "price": 190,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØªÙÙØ© ÙØ§ÙØ®Ø¶Ø§Ø±",
+          "desc_en": "Fetter with tuna and vegetables",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØªÙÙØ© ÙØ¨ÙØ±",
+          "name_en": "Tuna Fetter (Large)",
+          "price": 210,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØªÙÙØ© ÙØ§ÙØ®Ø¶Ø§Ø±",
+          "desc_en": "Fetter with tuna and vegetables",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¬Ø¨Ù ÙØ´ÙÙ ÙØ³Ø·",
+          "name_en": "Mixed Cheese Fetter (Medium)",
+          "price": 150,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ²ÙØ¬ Ø§ÙØ¬Ø¨Ù Ø§ÙÙØ´ÙÙ",
+          "desc_en": "Fetter with mixed cheese blend",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¬Ø¨Ù ÙØ´ÙÙ ÙØ¨ÙØ±",
+          "name_en": "Mixed Cheese Fetter (Large)",
+          "price": 180,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ²ÙØ¬ Ø§ÙØ¬Ø¨Ù Ø§ÙÙØ´ÙÙ",
+          "desc_en": "Fetter with mixed cheese blend",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ±Ø§ÙØª ÙØ³Ø·",
+          "name_en": "Kraft Fetter (Medium)",
+          "price": 150,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø¬Ø¨ÙØ© Ø§ÙÙØ±Ø§ÙØª Ø§ÙÙØ°Ø§Ø¨Ø©",
+          "desc_en": "Fetter with melted kraft cheese",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ±Ø§ÙØª ÙØ¨ÙØ±",
+          "name_en": "Kraft Fetter (Large)",
+          "price": 180,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø¬Ø¨ÙØ© Ø§ÙÙØ±Ø§ÙØª Ø§ÙÙØ°Ø§Ø¨Ø©",
+          "desc_en": "Fetter with melted kraft cheese",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ§Ø³ØªØ± ÙØ³Ø·",
+          "name_en": "Custard Fetter (Medium)",
+          "price": 100,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ±ÙÙØ© Ø§ÙÙØ§Ø³ØªØ±Ø¯",
+          "desc_en": "Fetter with custard cream",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙØ§Ø³ØªØ± ÙØ¨ÙØ±",
+          "name_en": "Custard Fetter (Large)",
+          "price": 130,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ±ÙÙØ© Ø§ÙÙØ§Ø³ØªØ±Ø¯",
+          "desc_en": "Fetter with custard cream",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø´ÙÙÙÙØ§ØªÙ ÙØ³Ø·",
+          "name_en": "Chocolate Fetter (Medium)",
+          "price": 130,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ´ÙÙÙÙØ§ØªØ© Ø§ÙØ¨ÙØ¶Ø§Ø¡",
+          "desc_en": "Fetter with white chocolate",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø´ÙÙÙÙØ§ØªÙ ÙØ¨ÙØ±",
+          "name_en": "Chocolate Fetter (Large)",
+          "price": 150,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø§ÙØ´ÙÙÙÙØ§ØªØ© Ø§ÙØ¨ÙØ¶Ø§Ø¡",
+          "desc_en": "Fetter with white chocolate",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙÙØªØ³ ÙØ³Ø·",
+          "name_en": "Lotus Fetter (Medium)",
+          "price": 130,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ±ÙÙØ© Ø§ÙÙÙØªØ³",
+          "desc_en": "Fetter with lotus cream",
+          "tag": "popular"
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± ÙÙØªØ³ ÙØ¨ÙØ±",
+          "name_en": "Lotus Fetter (Large)",
+          "price": 150,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ÙØ±ÙÙØ© Ø§ÙÙÙØªØ³",
+          "desc_en": "Fetter with lotus cream",
+          "tag": "popular"
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø´ÙÙÙÙØ§ØªÙ Ø¨ÙØ¯Ù ÙØ³Ø·",
+          "name_en": "Nutella Fetter (Medium)",
+          "price": 150,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø´ÙÙÙÙØ§ØªØ© Ø§ÙÙÙØªÙÙØ§",
+          "desc_en": "Fetter with Nutella chocolate",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø´ÙÙÙÙØ§ØªÙ Ø¨ÙØ¯Ù ÙØ¨ÙØ±",
+          "name_en": "Nutella Fetter (Large)",
+          "price": 170,
+          "desc_ar": "ÙØ·ÙØ± Ø¨Ø´ÙÙÙÙØ§ØªØ© Ø§ÙÙÙØªÙÙØ§",
+          "desc_en": "Fetter with Nutella chocolate",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨ØºØ§Ø´Ø© ÙØ³Ø·",
+          "name_en": "Baghasha Fetter (Medium)",
+          "price": 100,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ØºØ§Ø´Ø© ØªÙÙÙØ¯Ù",
+          "desc_en": "Traditional baghasha fetter",
+          "tag": ""
+        },
+        {
+          "name_ar": "ÙØ·ÙØ± Ø¨ØºØ§Ø´Ø© ÙØ¨ÙØ±",
+          "name_en": "Baghasha Fetter (Large)",
+          "price": 120,
+          "desc_ar": "ÙØ·ÙØ± Ø¨ØºØ§Ø´Ø© ØªÙÙÙØ¯Ù",
+          "desc_en": "Traditional baghasha fetter",
+          "tag": ""
+        }
       ]
     },
     {
       "id": "rocket",
-      "name_ar": "صاروخ",
+      "name_ar": "ØµØ§Ø±ÙØ®",
       "name_en": "Rocket",
-      "emoji": "🌯",
+      "emoji": "ð¯",
       "items": [
-        { "name_ar": "صاروخ فراخ",         "name_en": "Chicken Rocket",    "price": 160, "desc_ar": "فراخ استربس مقرمشة بالصوص الخاص",      "desc_en": "Crispy chicken strips with special sauce", "tag": "popular" },
-        { "name_ar": "صاروخ لحمة",         "name_en": "Beef Rocket",       "price": 160, "desc_ar": "لحمة مشوية بالتوابل المميزة",            "desc_en": "Grilled beef with special spices", "tag": "" },
-        { "name_ar": "صاروخ سجق",          "name_en": "Sausage Rocket",    "price": 160, "desc_ar": "سجق مشوي بالصوص الخاص",                "desc_en": "Grilled sausage with special sauce", "tag": "" },
-        { "name_ar": "صاروخ مشكل لحوم",   "name_en": "Mixed Meat Rocket", "price": 160, "desc_ar": "مشكل لحوم وفراخ بالصوص الخاص",         "desc_en": "Mixed meat and chicken with special sauce", "tag": "" }
+        {
+          "name_ar": "ØµØ§Ø±ÙØ® ÙØ±Ø§Ø®",
+          "name_en": "Chicken Rocket",
+          "price": 160,
+          "desc_ar": "ÙØ±Ø§Ø® Ø§Ø³ØªØ±Ø¨Ø³ ÙÙØ±ÙØ´Ø© Ø¨Ø§ÙØµÙØµ Ø§ÙØ®Ø§Øµ",
+          "desc_en": "Crispy chicken strips with special sauce",
+          "tag": "popular"
+        },
+        {
+          "name_ar": "ØµØ§Ø±ÙØ® ÙØ­ÙØ©",
+          "name_en": "Beef Rocket",
+          "price": 160,
+          "desc_ar": "ÙØ­ÙØ© ÙØ´ÙÙØ© Ø¨Ø§ÙØªÙØ§Ø¨Ù Ø§ÙÙÙÙØ²Ø©",
+          "desc_en": "Grilled beef with special spices",
+          "tag": ""
+        },
+        {
+          "name_ar": "ØµØ§Ø±ÙØ® Ø³Ø¬Ù",
+          "name_en": "Sausage Rocket",
+          "price": 160,
+          "desc_ar": "Ø³Ø¬Ù ÙØ´ÙÙ Ø¨Ø§ÙØµÙØµ Ø§ÙØ®Ø§Øµ",
+          "desc_en": "Grilled sausage with special sauce",
+          "tag": ""
+        },
+        {
+          "name_ar": "ØµØ§Ø±ÙØ® ÙØ´ÙÙ ÙØ­ÙÙ",
+          "name_en": "Mixed Meat Rocket",
+          "price": 160,
+          "desc_ar": "ÙØ´ÙÙ ÙØ­ÙÙ ÙÙØ±Ø§Ø® Ø¨Ø§ÙØµÙØµ Ø§ÙØ®Ø§Øµ",
+          "desc_en": "Mixed meat and chicken with special sauce",
+          "tag": ""
+        }
       ]
     }
   ]
