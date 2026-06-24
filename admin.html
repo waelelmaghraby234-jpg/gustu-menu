@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GUSTU Admin — تعديل القائمة</title>
+<style>
+:root{--red:#C0392B;--red-l:#FADBD8;--gold:#E67E22;--gold-l:#FEF5E7;
+      --green:#1A7A56;--green-l:#EAFAF1;--navy:#1B2E4B;--navy-l:#EBF0F7;
+      --bg:#F4F2EE;--white:#fff;--border:#E0D8CC;--muted:#6B7280;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Cairo',sans-serif;
+     background:var(--bg);color:var(--navy);direction:rtl;font-size:14px}
+
+/* ── Auth ── */
+#authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{background:var(--white);border-radius:16px;padding:2.5rem;width:100%;max-width:380px;
+           box-shadow:0 8px 40px rgba(0,0,0,.12);text-align:center}
+.auth-logo{font-size:48px;margin-bottom:12px}
+.auth-title{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;
+            font-size:15px;font-family:inherit;direction:ltr;text-align:center;
+            margin-bottom:12px;color:var(--navy)}
+.auth-input:focus{outline:none;border-color:var(--red)}
+.auth-btn{width:100%;padding:12px;background:var(--red);color:#fff;border:none;
+          border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.auth-btn:hover{background:#96281B}
+.auth-err{color:var(--red);font-size:13px;margin-top:8px}
+
+/* ── App ── */
+#app{display:none}
+.topbar{background:var(--navy);padding:0 1.5rem;height:56px;display:flex;
+        align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;
+        border-bottom:2px solid var(--red)}
+.topbar h1{font-size:15px;font-weight:700;color:#fff}
+.topbar-right{display:flex;gap:10px;align-items:center}
+.tbtn{font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;border:none;
+      cursor:pointer;font-family:inherit}
+.tbtn-preview{background:rgba(255,255,255,.15);color:#fff}
+.tbtn-save{background:var(--red);color:#fff}
+.tbtn-save:hover{background:#96281B}
+
+.main{padding:1.5rem;max-width:1100px;margin:0 auto}
+
+/* ── Info banner ── */
+.info-banner{background:var(--navy-l);border-radius:var(--r);border-right:4px solid var(--navy);
+             padding:12px 16px;margin-bottom:1.25rem;font-size:13px;color:var(--navy)}
+
+/* ── How to save ── */
+.save-panel{background:var(--white);border-radius:var(--r);border:.5px solid var(--border);
+            padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+.save-panel h3{font-size:14px;font-weight:700;margin-bottom:10px}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;align-items:flex-start;gap:10px;font-size:13px}
+.step-num{width:22px;height:22px;background:var(--red);color:#fff;border-radius:50%;
+          display:flex;align-items:center;justify-content:center;font-size:11px;
+          font-weight:800;flex-shrink:0;margin-top:1px}
+code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px;
+     font-family:monospace;direction:ltr;display:inline-block}
+
+/* ── Category tabs ── */
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+.cat-tab{padding:7px 16px;border:1.5px solid var(--border);border-radius:30px;
+         background:var(--white);cursor:pointer;font-size:13px;font-weight:600;
+         font-family:inherit;color:var(--navy);transition:all .15s}
+.cat-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ── Items table ── */
+.items-panel{background:var(--white);border-radius:var(--r);border:.5px solid var(--border);overflow:hidden}
+.panel-hdr{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.panel-hdr h3{font-size:14px;font-weight:700;color:#fff}
+.add-btn{font-size:12px;padding:5px 12px;background:rgba(255,255,255,.15);color:#fff;
+         border:1px solid rgba(255,255,255,.3);border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600}
+.add-btn:hover{background:rgba(255,255,255,.25)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:right;padding:10px 12px;font-size:11px;font-weight:700;
+         color:var(--muted);border-bottom:1px solid var(--border);
+         background:#FAF8F5;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+tbody tr:hover{background:#FFF9F5}
+tbody td{padding:10px 12px;border-bottom:.5px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+
+.edit-input{border:1.5px solid transparent;border-radius:6px;padding:4px 8px;
+            font-size:13px;font-family:inherit;background:transparent;
+            color:var(--navy);width:100%;direction:rtl}
+.edit-input:focus{outline:none;border-color:var(--red);background:var(--white)}
+.price-input{width:80px;text-align:center;font-weight:700;direction:ltr;color:var(--red)}
+.tag-select{border:1.5px solid var(--border);border-radius:6px;padding:4px 6px;
+            font-size:12px;font-family:inherit;background:var(--white);color:var(--navy)}
+.tag-select:focus{outline:none;border-color:var(--red)}
+.del-btn{background:var(--red-l);color:var(--red);border:1px solid var(--red);
+         border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;
+         font-family:inherit;font-weight:600;white-space:nowrap}
+.del-btn:hover{background:var(--red);color:#fff}
+
+/* ── Restaurant info ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.field input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;
+             font-size:13px;font-family:inherit;color:var(--navy)}
+.field input:focus{outline:none;border-color:var(--red)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+       background:var(--navy);color:#fff;padding:10px 24px;border-radius:30px;
+       font-size:13px;font-family:inherit;z-index:9999;opacity:0;
+       transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ── JSON output ── */
+.json-out{background:#1a1a2e;color:#a8ff78;padding:16px;border-radius:var(--r);
+          font-family:monospace;font-size:11px;direction:ltr;text-align:left;
+          overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto}
+.copy-btn{background:var(--green);color:#fff;border:none;border-radius:6px;
+          padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;font-family:inherit}
+.copy-btn:hover{opacity:.85}
+
+.section-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;
+               padding-bottom:8px;border-bottom:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🔐</div>
+    <div class="auth-title">GUSTU Admin</div>
+    <div class="auth-sub">لوحة تعديل القائمة<br>Menu Editor Panel</div>
+    <input class="auth-input" type="password" id="pwdInput" placeholder="Password"
+           onkeydown="if(event.key==='Enter')checkPwd()">
+    <button class="auth-btn" onclick="checkPwd()">دخول / Login</button>
+    <div class="auth-err" id="authErr"></div>
+    <div style="margin-top:16px;font-size:11px;color:var(--muted)">Default password: gustu2024</div>
+  </div>
+</div>
+
+<!-- Admin App -->
+<div id="app">
+  <div class="topbar">
+    <h1>🍕 GUSTU Admin — تعديل القائمة</h1>
+    <div class="topbar-right">
+      <button class="tbtn tbtn-preview" onclick="window.open('index.html','_blank')">👁️ معاينة</button>
+      <button class="tbtn tbtn-save" onclick="generateJSON()">💾 تصدير JSON</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="info-banner">
+      ℹ️ <strong>كيف يعمل النظام:</strong> عدّل الأسعار والأصناف هنا ← اضغط "تصدير JSON" ← انسخ الملف إلى GitHub ← يتحدث القائمة تلقائياً لكل العملاء اللي بيمسحوا QR Code
+    </div>
+
+    <!-- Step-by-step save guide -->
+    <div class="save-panel">
+      <h3>📋 خطوات تحديث القائمة على GitHub</h3>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span><span>عدّل الأسعار والأصناف في الجداول أدناه</span></div>
+        <div class="step"><span class="step-num">2</span><span>اضغط <strong>"تصدير JSON"</strong> ← اضغط <strong>"نسخ"</strong></span></div>
+        <div class="step"><span class="step-num">3</span><span>افتح ملف <code>menu.json</code> في GitHub ← اضغط ✏️ Edit ← الصق المحتوى ← <strong>Commit changes</strong></span></div>
+        <div class="step"><span class="step-num">4</span><span>بعد 30 ثانية — كل عميل يفتح القائمة يشوف الأسعار الجديدة تلقائياً ✅</span></div>
+      </div>
+    </div>
+
+    <!-- Restaurant info -->
+    <div class="save-panel" style="margin-bottom:1.25rem">
+      <div class="section-title">🏪 معلومات المحل</div>
+      <div class="info-grid">
+        <div class="field"><label>اسم المحل</label><input type="text" id="restName" value="GUSTU"></div>
+        <div class="field"><label>العنوان (عربي)</label><input type="text" id="restAddrAr" placeholder="العنوان"></div>
+        <div class="field"><label>رقم التليفون</label><input type="text" id="restPhone" placeholder="+20..."></div>
+        <div class="field"><label>Address (English)</label><input type="text" id="restAddrEn" placeholder="Address"></div>
+      </div>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <!-- Items table -->
+    <div class="items-panel" id="itemsPanel"></div>
+
+    <!-- JSON output -->
+    <div class="save-panel" style="margin-top:1.25rem" id="jsonPanel" style="display:none">
+      <div class="section-title">📄 ملف JSON الجديد — انسخه إلى GitHub</div>
+      <div class="json-out" id="jsonOut"></div>
+      <button class="copy-btn" onclick="copyJSON()">📋 نسخ الكل</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Auth ────────────────────────────────────────────────────────────────────
+const PASSWORD = 'gustu2024'; // change this!
+function checkPwd() {
+  const p = document.getElementById('pwdInput').value;
+  if(p === PASSWORD) {
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    loadData();
+  } else {
+    document.getElementById('authErr').textContent='كلمة المرور غلط — Wrong password';
+    document.getElementById('pwdInput').value='';
+  }
+}
+
+// ── State ───────────────────────────────────────────────────────────────────
+let MENU = null;
+let activeCat = 0;
+
+async function loadData() {
+  try {
+    const res = await fetch('menu.json?v='+Date.now());
+    MENU = await res.json();
+    // Populate restaurant fields
+    document.getElementById('restName').value   = MENU.restaurant.name;
+    document.getElementById('restPhone').value  = MENU.restaurant.phone || '';
+    document.getElementById('restAddrAr').value = MENU.restaurant.address_ar || '';
+    document.getElementById('restAddrEn').value = MENU.restaurant.address_en || '';
+    renderCatTabs();
+    renderItemsTable();
+  } catch(e) {
+    toast('⚠️ تعذر تحميل القائمة');
+  }
+}
+
+// ── Render category tabs ─────────────────────────────────────────────────────
+function renderCatTabs() {
+  const div = document.getElementById('catTabs');
+  div.innerHTML = MENU.categories.map((c,i) =>
+    `<button class="cat-tab ${i===activeCat?'active':''}" onclick="switchCat(${i})">
+      ${c.emoji} ${c.name_ar}
+    </button>`).join('');
+}
+
+function switchCat(i) {
+  activeCat = i;
+  renderCatTabs();
+  renderItemsTable();
+}
+
+// ── Render items table ───────────────────────────────────────────────────────
+function renderItemsTable() {
+  const cat = MENU.categories[activeCat];
+  const panel = document.getElementById('itemsPanel');
+  panel.innerHTML = `
+    <div class="panel-hdr">
+      <h3>${cat.emoji} ${cat.name_ar} — ${cat.name_en}</h3>
+      <button class="add-btn" onclick="addItem()">➕ إضافة صنف</button>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr>
+        <th>اسم الصنف (عربي)</th>
+        <th>Name (English)</th>
+        <th>السعر (ج)</th>
+        <th>وصف عربي</th>
+        <th>تمييز</th>
+        <th style="width:60px">حذف</th>
+      </tr></thead>
+      <tbody id="itemsTbody">
+        ${cat.items.map((item,i) => `
+        <tr>
+          <td><input class="edit-input" value="${esc(item.name_ar)}"
+              onchange="updateItem(${i},'name_ar',this.value)"></td>
+          <td><input class="edit-input" value="${esc(item.name_en)}" style="direction:ltr"
+              onchange="updateItem(${i},'name_en',this.value)"></td>
+          <td><input class="edit-input price-input" type="number" value="${item.price}"
+              onchange="updateItem(${i},'price',+this.value)"></td>
+          <td><input class="edit-input" value="${esc(item.desc_ar||'')}"
+              onchange="updateItem(${i},'desc_ar',this.value)"></td>
+          <td>
+            <select class="tag-select" onchange="updateItem(${i},'tag',this.value)">
+              <option value="" ${!item.tag?'selected':''}>—</option>
+              <option value="popular" ${item.tag==='popular'?'selected':''}>⭐ الأكثر طلباً</option>
+              <option value="new" ${item.tag==='new'?'selected':''}>✨ جديد</option>
+            </select>
+          </td>
+          <td><button class="del-btn" onclick="deleteItem(${i})">🗑️</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+function esc(s) { return (s||'').replace(/"/g,'&quot;'); }
+
+function updateItem(idx, field, val) {
+  MENU.categories[activeCat].items[idx][field] = val;
+}
+
+function addItem() {
+  MENU.categories[activeCat].items.push({
+    name_ar: 'صنف جديد', name_en: 'New Item',
+    price: 0, desc_ar: '', desc_en: '', tag: ''
+  });
+  renderItemsTable();
+  toast('✅ تمت الإضافة — عدّل البيانات ثم اضغط تصدير');
+}
+
+function deleteItem(idx) {
+  if(!confirm('هل تريد حذف هذا الصنف؟')) return;
+  MENU.categories[activeCat].items.splice(idx, 1);
+  renderItemsTable();
+  toast('🗑️ تم الحذف');
+}
+
+// ── Generate JSON ────────────────────────────────────────────────────────────
+function generateJSON() {
+  // Update restaurant info from fields
+  MENU.restaurant.name       = document.getElementById('restName').value;
+  MENU.restaurant.phone      = document.getElementById('restPhone').value;
+  MENU.restaurant.address_ar = document.getElementById('restAddrAr').value;
+  MENU.restaurant.address_en = document.getElementById('restAddrEn').value;
+  MENU.last_updated = new Date().toISOString().split('T')[0];
+
+  const json = JSON.stringify(MENU, null, 2);
+  const panel = document.getElementById('jsonPanel');
+  panel.style.display = '';
+  document.getElementById('jsonOut').textContent = json;
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+  toast('✅ JSON جاهز — انسخه إلى GitHub');
+}
+
+function copyJSON() {
+  const text = document.getElementById('jsonOut').textContent;
+  navigator.clipboard.writeText(text).then(()=>toast('📋 تم النسخ!'));
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+</script>
+</body>
+</html>
