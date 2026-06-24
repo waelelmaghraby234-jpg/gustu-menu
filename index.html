@@ -2,316 +2,368 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="theme-color" content="#C0392B">
-<meta property="og:title" content="GUSTU — Pizza & Fetter Menu">
-<meta property="og:description" content="View our full menu with prices">
 <title>GUSTU — القائمة</title>
 <style>
-:root{
-  --red:#C0392B;--red-d:#96281B;--red-l:#FADBD8;
-  --gold:#E67E22;--gold-l:#FEF5E7;
-  --green:#1A7A56;--green-l:#EAFAF1;
-  --navy:#1B2E4B;
-  --bg:#FBF9F7;--white:#fff;
-  --card:#fff;--border:#EDE8E1;
-  --text:#1a1a1a;--muted:#888;
-  --r:14px;--shadow:0 2px 16px rgba(0,0,0,.08);
-}
+:root{--red:#C0392B;--red-d:#96281B;--red-l:#FADBD8;--gold:#E67E22;--gold-l:#FEF5E7;
+      --green:#1A7A56;--green-l:#EAFAF1;--navy:#1B2E4B;--bg:#FBF9F7;--white:#fff;
+      --border:#EDE8E1;--muted:#888;--r:14px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Cairo',sans-serif;
-     background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:#1a1a1a;min-height:100vh;overflow-x:hidden}
 
-/* ── Header ── */
-.header{background:linear-gradient(135deg,var(--red) 0%,var(--red-d) 100%);
-        padding:28px 20px 20px;text-align:center;position:relative}
-.header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:24px;
-               background:var(--bg);border-radius:24px 24px 0 0}
-.logo-emoji{font-size:52px;line-height:1;margin-bottom:8px;display:block}
-.brand-name{font-size:32px;font-weight:800;color:#fff;letter-spacing:.05em;
-            text-shadow:0 2px 8px rgba(0,0,0,.2)}
-.brand-sub{font-size:14px;color:rgba(255,255,255,.8);margin-top:4px;font-weight:500}
-.updated-badge{display:inline-block;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);
-               font-size:11px;padding:3px 10px;border-radius:20px;margin-top:8px}
+/* Header */
+.header{background:linear-gradient(135deg,var(--red),var(--red-d));padding:28px 20px 20px;text-align:center;position:relative}
+.header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:24px;background:var(--bg);border-radius:24px 24px 0 0}
+.logo-e{font-size:52px;line-height:1;margin-bottom:8px;display:block}
+.brand{font-size:32px;font-weight:800;color:#fff;letter-spacing:.05em}
+.brand-sub{font-size:14px;color:rgba(255,255,255,.8);margin-top:4px}
 
-/* ── Lang toggle ── */
+/* Info bar */
+.info-bar{background:var(--navy);padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.info-item{display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,.85)}
+.info-item a{color:rgba(255,255,255,.85);text-decoration:none}
+.info-sep{color:rgba(255,255,255,.3);font-size:10px}
+
+/* Lang toggle */
 .lang-bar{position:fixed;top:12px;left:12px;z-index:100;display:flex;gap:6px}
-.lang-btn{font-size:12px;font-weight:700;padding:5px 12px;border:none;border-radius:20px;
-          cursor:pointer;transition:all .2s;font-family:inherit}
-.lang-btn.active{background:#fff;color:var(--red);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.lang-btn{font-size:12px;font-weight:700;padding:5px 12px;border:none;border-radius:20px;cursor:pointer}
+.lang-btn.active{background:#fff;color:var(--red)}
 .lang-btn:not(.active){background:rgba(255,255,255,.25);color:#fff}
 
-/* ── Category tabs ── */
-.cat-nav{position:sticky;top:0;z-index:50;background:var(--bg);
-         padding:14px 16px;overflow-x:auto;white-space:nowrap;
-         border-bottom:1px solid var(--border);scrollbar-width:none}
+/* Category tabs */
+.cat-nav{position:sticky;top:0;z-index:50;background:var(--bg);padding:12px 16px;overflow-x:auto;white-space:nowrap;border-bottom:1px solid var(--border);scrollbar-width:none}
 .cat-nav::-webkit-scrollbar{display:none}
-.cat-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;
-         border:1.5px solid var(--border);border-radius:30px;background:var(--white);
-         font-size:13px;font-weight:600;cursor:pointer;margin-left:8px;
-         font-family:inherit;color:var(--text);transition:all .2s;white-space:nowrap}
-.cat-btn:first-child{margin-left:0}
-.cat-btn.active{background:var(--red);border-color:var(--red);color:#fff;
-                box-shadow:0 3px 12px rgba(192,57,43,.35)}
-.cat-emoji{font-size:16px}
+.cat-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border:1.5px solid var(--border);border-radius:30px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;margin-left:8px;font-family:inherit;color:#1a1a1a;transition:all .2s}
+.cat-btn.active{background:var(--red);border-color:var(--red);color:#fff}
 
-/* ── Search bar ── */
+/* Search */
 .search-wrap{padding:12px 16px 4px}
-.search-box{display:flex;align-items:center;gap:8px;background:var(--white);
-            border:1.5px solid var(--border);border-radius:30px;padding:8px 16px}
-.search-box input{border:none;outline:none;flex:1;font-size:14px;
-                  font-family:inherit;background:transparent;color:var(--text);
-                  direction:rtl}
-.search-box .si{font-size:16px;color:var(--muted)}
+.search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border);border-radius:30px;padding:8px 16px}
+.search-box input{border:none;outline:none;flex:1;font-size:14px;font-family:inherit;background:transparent;direction:rtl}
 
-/* ── Category section ── */
-.cat-section{padding:20px 16px 8px;scroll-margin-top:100px}
-.cat-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.cat-header-emoji{font-size:24px}
-.cat-header-name{font-size:20px;font-weight:800;color:var(--navy)}
-.cat-header-en{font-size:13px;color:var(--muted);margin-right:8px}
+/* Category section */
+.cat-section{padding:18px 16px 8px;scroll-margin-top:90px}
+.cat-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.cat-hdr-name{font-size:20px;font-weight:800;color:var(--navy)}
 .cat-divider{flex:1;height:1.5px;background:linear-gradient(90deg,var(--border),transparent)}
 
-/* ── Menu item card ── */
+/* Item card */
 .items-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:360px){.items-grid{grid-template-columns:1fr}}
 @media(min-width:600px){.items-grid{grid-template-columns:repeat(3,1fr)}}
 
-.item-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);
-           padding:14px;display:flex;flex-direction:column;gap:6px;
-           box-shadow:0 1px 6px rgba(0,0,0,.05);transition:transform .15s,box-shadow .15s;
-           position:relative;overflow:hidden}
+.item-card{background:#fff;border-radius:var(--r);border:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s}
 .item-card:active{transform:scale(.97)}
-.item-card::before{content:'';position:absolute;top:0;right:0;width:3px;
-                   height:100%;background:var(--red);opacity:0;transition:opacity .2s}
-.item-card:hover::before{opacity:1}
-
-.item-tag{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;
-          border-radius:20px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.item-tag{display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px}
 .item-tag.popular{background:var(--gold-l);color:var(--gold)}
 .item-tag.new{background:var(--green-l);color:var(--green)}
+.item-name-ar{font-size:13px;font-weight:700;direction:rtl;line-height:1.4}
+.item-name-en{font-size:11px;color:var(--muted);direction:ltr;text-align:right}
+.item-desc{font-size:11px;color:var(--muted);line-height:1.5}
+.item-price{font-size:16px;font-weight:800;color:var(--red);margin-top:auto;padding-top:5px}
+.item-price::after{content:" ج";font-size:11px;color:var(--muted);font-weight:600}
+.item-stars{font-size:11px;color:var(--gold);margin-top:2px}
+.item-rev-count{font-size:10px;color:var(--muted)}
 
-.item-name-ar{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;direction:rtl}
-.item-name-en{font-size:11px;color:var(--muted);font-weight:500;margin-top:1px;direction:ltr;text-align:right}
-.item-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-top:2px}
-.item-desc.ar{direction:rtl}
-.item-desc.en{direction:ltr;text-align:right}
-.item-price{font-size:16px;font-weight:800;color:var(--red);margin-top:auto;padding-top:6px}
-.item-price::after{content:" ج";font-size:11px;font-weight:600;color:var(--muted)}
+/* Review modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:24px 20px 32px;max-height:85vh;overflow-y:auto}
+.modal-drag{width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.star-picker{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+.star-picker span{font-size:32px;cursor:pointer;opacity:.3;transition:all .15s}
+.star-picker span.on{opacity:1;transform:scale(1.15)}
+.review-input{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px;font-size:14px;font-family:inherit;direction:rtl;resize:none;height:90px;margin-bottom:8px}
+.review-input:focus{outline:none;border-color:var(--red)}
+.name-input{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit;direction:rtl;margin-bottom:14px}
+.name-input:focus{outline:none;border-color:var(--red)}
+.submit-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.submit-btn:disabled{background:#ccc;cursor:not-allowed}
+.reviews-list{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+.review-item{background:var(--bg);border-radius:10px;padding:12px}
+.review-stars{font-size:13px;color:var(--gold);margin-bottom:3px}
+.review-name{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.review-text{font-size:13px;color:#444;line-height:1.5}
+.review-date{font-size:10px;color:var(--muted);margin-top:4px}
+.no-reviews{text-align:center;color:var(--muted);font-size:13px;padding:16px}
 
-/* en mode fixes */
+/* Footer */
+.footer{padding:28px 20px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:20px}
+.footer strong{color:var(--red)}
+.wa-btn{display:inline-flex;align-items:center;gap:6px;background:#25D366;color:#fff;border:none;border-radius:30px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px;text-decoration:none}
+
+/* Loading */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;color:var(--muted);font-size:15px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scroll-top{position:fixed;bottom:20px;left:20px;width:42px;height:42px;background:var(--red);color:#fff;border:none;border-radius:50%;font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:90;box-shadow:0 4px 16px rgba(192,57,43,.4)}
+.scroll-top.show{display:flex}
+.no-results{text-align:center;padding:40px 20px;color:var(--muted);font-size:15px}
 body.en-mode{direction:ltr}
 body.en-mode .item-name-ar{display:none}
-body.en-mode .item-name-en{font-size:13px;font-weight:700;color:var(--text);direction:ltr;text-align:left}
+body.en-mode .item-name-en{font-size:13px;font-weight:700;color:#1a1a1a;direction:ltr;text-align:left}
 body.en-mode .item-price{text-align:left}
 body.en-mode .item-price::after{content:" EGP"}
-body.en-mode .cat-nav{direction:ltr}
-body.en-mode .search-box input{direction:ltr}
-body.en-mode .item-desc.ar{display:none}
-body.en-mode .item-desc.en{display:block!important}
-.item-desc.en{display:none}
-
-/* ── No results ── */
-.no-results{text-align:center;padding:40px 20px;color:var(--muted);font-size:15px}
-
-/* ── Footer ── */
-.footer{padding:30px 20px;text-align:center;color:var(--muted);font-size:12px;
-        border-top:1px solid var(--border);margin-top:20px}
-.footer strong{color:var(--red)}
-
-/* ── Loading ── */
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;
-         min-height:60vh;gap:16px;color:var(--muted);font-size:15px}
-.spinner{width:36px;height:36px;border:3px solid var(--border);
-         border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── Scroll to top ── */
-.scroll-top{position:fixed;bottom:20px;left:20px;width:42px;height:42px;
-            background:var(--red);color:#fff;border:none;border-radius:50%;
-            font-size:18px;cursor:pointer;box-shadow:0 4px 16px rgba(192,57,43,.4);
-            display:none;align-items:center;justify-content:center;z-index:90}
-.scroll-top.show{display:flex}
 </style>
 </head>
 <body>
 
-<!-- Language toggle -->
 <div class="lang-bar">
   <button class="lang-btn active" id="btnAr" onclick="setLang('ar')">ع</button>
   <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
 </div>
 
-<!-- Scroll to top -->
 <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-<!-- Main content -->
 <div id="app">
-  <div class="loading">
-    <div class="spinner"></div>
-    <span id="loadingText">جاري تحميل القائمة…</span>
+  <div class="loading"><div class="spinner"></div><span>جاري تحميل القائمة…</span></div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-sub" id="modalSub">شاركنا رأيك في هذا الصنف</div>
+
+    <div class="star-picker" id="starPicker">
+      <span onclick="setStar(1)">★</span>
+      <span onclick="setStar(2)">★</span>
+      <span onclick="setStar(3)">★</span>
+      <span onclick="setStar(4)">★</span>
+      <span onclick="setStar(5)">★</span>
+    </div>
+
+    <input class="name-input" id="reviewerName" placeholder="اسمك (اختياري)">
+    <textarea class="review-input" id="reviewText" placeholder="اكتب تعليقك هنا..."></textarea>
+    <button class="submit-btn" id="submitBtn" onclick="submitReview()">إرسال التقييم</button>
+
+    <div class="reviews-list" id="reviewsList"></div>
   </div>
 </div>
 
 <script>
-let MENU = null;
-let lang = localStorage.getItem('gustu_lang') || 'ar';
-let activeCategory = 'all';
+const BIN_ID  = '6a3bc497da38895dfef709cf';
+const API_KEY = '$2a$10$pK5If.28NeQdWrZONPlU0OZHN29r4gUDb5dysLav0TvlQPwjr.sFG';
+const BASE    = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 
-// ── Load menu data ─────────────────────────────────────────────────────────
-async function loadMenu() {
+let MENU = null, lang = localStorage.getItem('gustu_lang')||'ar';
+let currentItem = null, selectedStar = 0;
+
+async function loadMenu(){
   try {
-    const res = await fetch('https://api.jsonbin.io/v3/b/6a3bc497da38895dfef709cf/latest', {
-      headers: { 'X-Master-Key': '$2a$10$pK5If.28NeQdWrZONPlU0OZHN29r4gUDb5dysLav0TvlQPwjr.sFG' }
-    });
+    const res = await fetch(BASE + '/latest', { headers:{'X-Master-Key':API_KEY} });
     const data = await res.json();
     MENU = data.record;
+    if(!MENU.reviews) MENU.reviews = [];
     renderApp();
-  } catch(e) {
+  } catch(e){
     document.getElementById('app').innerHTML =
       '<div class="loading"><span>⚠️ تعذر تحميل القائمة — يرجى تحديث الصفحة</span></div>';
   }
 }
 
-// ── Render full app ────────────────────────────────────────────────────────
-function renderApp() {
+function renderApp(){
   const r = MENU.restaurant;
-  document.title = `${r.name} — ${lang==='ar' ? r.tagline_ar : r.tagline_en}`;
+  document.title = r.name + ' — القائمة';
 
-  let html = `
-  <div class="header">
-    <span class="logo-emoji">${r.logo_emoji}</span>
-    <div class="brand-name">${r.name}</div>
-    <div class="brand-sub">${r.tagline_ar} &nbsp;·&nbsp; ${r.tagline_en}</div>
-    <div class="updated-badge">🕐 ${lang==='ar'?'آخر تحديث':'Last updated'}: ${MENU.last_updated}</div>
-  </div>
+  // Info bar items
+  const phone   = r.phone    ? `<div class="info-item"><span>📞</span><a href="tel:${r.phone}">${r.phone}</a></div>` : '';
+  const addr    = r.address_ar? `<div class="info-item"><span>📍</span>${r.address_ar}</div>` : '';
+  const hours   = r.hours    ? `<div class="info-item"><span>🕐</span>${r.hours}</div>` : '';
+  const whatsapp= r.whatsapp ? `<div class="info-item"><span>💬</span><a href="https://wa.me/2${r.whatsapp}">WhatsApp</a></div>` : '';
 
-  <nav class="cat-nav" id="catNav">
-    <button class="cat-btn active" data-cat="all" onclick="filterCat('all',this)">
-      <span class="cat-emoji">🍽️</span>
-      <span class="t-ar">الكل</span><span class="t-en" style="display:none">All</span>
-    </button>
-    ${MENU.categories.map(c=>`
-    <button class="cat-btn" data-cat="${c.id}" onclick="scrollToSection('${c.id}',this)">
-      <span class="cat-emoji">${c.emoji}</span>
-      <span class="t-ar">${c.name_ar}</span>
-      <span class="t-en" style="display:none">${c.name_en}</span>
-    </button>`).join('')}
-  </nav>
+  const infoBar = (phone||addr||hours||whatsapp) ? `
+    <div class="info-bar">
+      ${phone}${phone&&addr?'<div class="info-sep">|</div>':''}
+      ${addr}${addr&&hours?'<div class="info-sep">|</div>':''}
+      ${hours}${hours&&whatsapp?'<div class="info-sep">|</div>':''}
+      ${whatsapp}
+    </div>` : '';
 
-  <div class="search-wrap">
-    <div class="search-box">
-      <span class="si">🔍</span>
-      <input type="text" id="searchInput" placeholder="${lang==='ar'?'ابحث عن صنف…':'Search items…'}"
-             oninput="doSearch(this.value)">
+  document.getElementById('app').innerHTML = `
+    <div class="header">
+      <span class="logo-e">${r.logo_emoji}</span>
+      <div class="brand">${r.name}</div>
+      <div class="brand-sub">${r.tagline_ar} &nbsp;·&nbsp; ${r.tagline_en}</div>
     </div>
-  </div>
-
-  <div id="menuBody">
-    ${MENU.categories.map(cat => `
-    <section class="cat-section" id="sec-${cat.id}">
-      <div class="cat-header">
-        <span class="cat-header-emoji">${cat.emoji}</span>
-        <span class="cat-header-name t-ar">${cat.name_ar}</span>
-        <span class="cat-header-en t-en" style="display:none">${cat.name_en}</span>
-        <div class="cat-divider"></div>
+    ${infoBar}
+    <nav class="cat-nav" id="catNav">
+      <button class="cat-btn active" onclick="filterAll(this)">🍽️ <span class="t-ar">الكل</span><span class="t-en" style="display:none">All</span></button>
+      ${MENU.categories.map(c=>`
+        <button class="cat-btn" onclick="scrollToSec('sec-${c.id}',this)">
+          ${c.emoji} <span class="t-ar">${c.name_ar}</span><span class="t-en" style="display:none">${c.name_en}</span>
+        </button>`).join('')}
+    </nav>
+    <div class="search-wrap">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="${lang==='ar'?'ابحث عن صنف…':'Search items…'}" oninput="doSearch(this.value)">
       </div>
-      <div class="items-grid">
-        ${cat.items.map(item => renderCard(item)).join('')}
-      </div>
-    </section>`).join('')}
-    <div id="noResults" class="no-results" style="display:none">
-      🔍 <span class="t-ar">لا توجد نتائج</span><span class="t-en" style="display:none">No results found</span>
     </div>
-  </div>
+    <div id="menuBody">
+      ${MENU.categories.map(cat=>`
+        <section class="cat-section" id="sec-${cat.id}">
+          <div class="cat-hdr">
+            <span style="font-size:24px">${cat.emoji}</span>
+            <span class="cat-hdr-name t-ar">${cat.name_ar}</span>
+            <span class="cat-hdr-name t-en" style="display:none">${cat.name_en}</span>
+            <div class="cat-divider"></div>
+          </div>
+          <div class="items-grid">
+            ${cat.items.map(item=>renderCard(item)).join('')}
+          </div>
+        </section>`).join('')}
+      <div id="noResults" class="no-results" style="display:none">🔍 لا توجد نتائج</div>
+    </div>
+    <div class="footer">
+      <strong>${r.name}</strong> — ${r.tagline_ar} · ${r.tagline_en}<br>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">آخر تحديث: ${MENU.last_updated||''}</div>
+      ${r.whatsapp?`<a class="wa-btn" href="https://wa.me/2${r.whatsapp}" target="_blank">💬 تواصل معنا على WhatsApp</a>`:''}
+    </div>`;
 
-  <div class="footer">
-    <strong>${r.name}</strong> — ${r.tagline_ar} · ${r.tagline_en}<br>
-    <span style="font-size:11px;margin-top:6px;display:block;opacity:.7">
-      ${lang==='ar'?'الأسعار شاملة لجميع المكونات':'Prices include all ingredients'}
-    </span>
-  </div>`;
-
-  document.getElementById('app').innerHTML = html;
   applyLang(lang);
-
-  // Scroll to top button
-  window.addEventListener('scroll', () => {
-    document.getElementById('scrollTop')?.classList.toggle('show', window.scrollY > 300);
+  window.addEventListener('scroll',()=>{
+    document.getElementById('scrollTop')?.classList.toggle('show',window.scrollY>300);
   });
 }
 
-function renderCard(item) {
-  const tag = item.tag ? `<span class="item-tag ${item.tag}">${
-    item.tag==='popular'?(lang==='ar'?'⭐ الأكثر طلباً':'⭐ Popular'):
-    (lang==='ar'?'✨ جديد':'✨ New')
-  }</span>` : '';
+function renderCard(item){
+  const itemReviews = (MENU.reviews||[]).filter(r=>r.item===item.name_ar);
+  const avgStars = itemReviews.length
+    ? (itemReviews.reduce((a,r)=>a+r.stars,0)/itemReviews.length).toFixed(1) : null;
+  const tag = item.tag ? `<span class="item-tag ${item.tag}">${item.tag==='popular'?'⭐ الأكثر طلباً':'✨ جديد'}</span>` : '';
+  const stars = avgStars
+    ? `<div class="item-stars">${'★'.repeat(Math.round(avgStars))}${'☆'.repeat(5-Math.round(avgStars))} ${avgStars}</div>
+       <div class="item-rev-count">${itemReviews.length} تقييم</div>`
+    : `<div class="item-rev-count" style="color:var(--muted);font-size:10px">لا يوجد تقييم بعد</div>`;
+
   return `
-  <div class="item-card" data-ar="${item.name_ar}" data-en="${item.name_en}">
-    ${tag}
-    <div class="item-name-ar">${item.name_ar}</div>
-    <div class="item-name-en">${item.name_en}</div>
-    ${item.desc_ar ? `<div class="item-desc ar">${item.desc_ar}</div>` : ''}
-    ${item.desc_en ? `<div class="item-desc en">${item.desc_en}</div>` : ''}
-    <div class="item-price">${item.price.toLocaleString()}</div>
-  </div>`;
+    <div class="item-card" onclick="openModal('${item.name_ar.replace(/'/g,"\\'")}')">
+      ${tag}
+      <div class="item-name-ar">${item.name_ar}</div>
+      <div class="item-name-en">${item.name_en}</div>
+      ${item.desc_ar?`<div class="item-desc">${item.desc_ar}</div>`:''}
+      <div class="item-price">${item.price.toLocaleString()}</div>
+      ${stars}
+      <div style="font-size:10px;color:var(--red);margin-top:3px">💬 اضغط لإضافة تقييم</div>
+    </div>`;
 }
 
-// ── Language ───────────────────────────────────────────────────────────────
-function setLang(l) {
-  lang = l;
-  localStorage.setItem('gustu_lang', l);
-  applyLang(l);
+// ── Review modal ──────────────────────────────────────────────────────────
+function openModal(itemName){
+  currentItem = itemName;
+  selectedStar = 0;
+  document.getElementById('modalTitle').textContent = itemName;
+  document.getElementById('reviewText').value = '';
+  document.getElementById('reviewerName').value = '';
+  document.getElementById('submitBtn').disabled = false;
+  updateStars(0);
+  renderReviews(itemName);
+  document.getElementById('modalBg').classList.add('open');
 }
 
-function applyLang(l) {
-  document.body.classList.toggle('en-mode', l==='en');
-  document.documentElement.setAttribute('dir', l==='ar'?'rtl':'ltr');
-  document.documentElement.setAttribute('lang', l);
-  document.getElementById('btnAr')?.classList.toggle('active', l==='ar');
-  document.getElementById('btnEn')?.classList.toggle('active', l==='en');
-  document.querySelectorAll('.t-ar').forEach(el=>el.style.display=l==='ar'?'':'none');
-  document.querySelectorAll('.t-en').forEach(el=>el.style.display=l==='en'?'':'none');
-  const inp = document.getElementById('searchInput');
-  if(inp) inp.placeholder = l==='ar'?'ابحث عن صنف…':'Search items…';
-  // Update tags language
-  document.querySelectorAll('.item-tag.popular').forEach(el=>
-    el.textContent=l==='ar'?'⭐ الأكثر طلباً':'⭐ Popular');
-  document.querySelectorAll('.item-tag.new').forEach(el=>
-    el.textContent=l==='ar'?'✨ جديد':'✨ New');
-  // Price suffix
-  document.querySelectorAll('.item-price').forEach(el => {
-    const style = document.getElementById('priceStyle');
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+
+function setStar(n){
+  selectedStar = n;
+  updateStars(n);
+}
+
+function updateStars(n){
+  document.querySelectorAll('#starPicker span').forEach((s,i)=>{
+    s.classList.toggle('on', i<n);
   });
 }
 
-// ── Search ─────────────────────────────────────────────────────────────────
-function doSearch(q) {
-  q = q.trim().toLowerCase();
-  let anyVisible = false;
-  document.querySelectorAll('.cat-section').forEach(sec => {
-    let secVisible = false;
-    sec.querySelectorAll('.item-card').forEach(card => {
-      const ar = card.dataset.ar?.toLowerCase() || '';
-      const en = card.dataset.en?.toLowerCase() || '';
-      const match = !q || ar.includes(q) || en.includes(q);
-      card.style.display = match ? '' : 'none';
-      if(match) { secVisible = true; anyVisible = true; }
+function renderReviews(itemName){
+  const reviews = (MENU.reviews||[]).filter(r=>r.item===itemName).reverse();
+  const el = document.getElementById('reviewsList');
+  if(!reviews.length){
+    el.innerHTML = '<div class="no-reviews">لا توجد تقييمات بعد — كن أول من يقيّم!</div>';
+    return;
+  }
+  el.innerHTML = reviews.map(r=>`
+    <div class="review-item">
+      <div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+      <div class="review-name">${r.name||'عميل'}</div>
+      <div class="review-text">${r.comment}</div>
+      <div class="review-date">${r.date||''}</div>
+    </div>`).join('');
+}
+
+async function submitReview(){
+  if(!selectedStar){ alert('اختر عدد النجوم أولاً'); return; }
+  const comment = document.getElementById('reviewText').value.trim();
+  if(!comment){ alert('اكتب تعليقك أولاً'); return; }
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = 'جاري الإرسال...';
+
+  const review = {
+    item: currentItem,
+    name: document.getElementById('reviewerName').value.trim() || 'عميل',
+    stars: selectedStar,
+    comment: comment,
+    date: new Date().toLocaleDateString('ar-EG')
+  };
+
+  if(!MENU.reviews) MENU.reviews = [];
+  MENU.reviews.push(review);
+
+  try {
+    const res = await fetch(BASE, {
+      method: 'PUT',
+      headers: { 'Content-Type':'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify(MENU)
     });
-    sec.style.display = secVisible ? '' : 'none';
-  });
-  document.getElementById('noResults').style.display = anyVisible ? 'none' : 'block';
+    if(res.ok){
+      document.getElementById('submitBtn').textContent = '✅ تم إرسال تقييمك!';
+      document.getElementById('reviewText').value = '';
+      document.getElementById('reviewerName').value = '';
+      selectedStar = 0;
+      updateStars(0);
+      renderReviews(currentItem);
+      // Refresh cards
+      setTimeout(()=>{ renderApp(); closeModal(); }, 1500);
+    } else {
+      throw new Error('Save failed');
+    }
+  } catch(e){
+    MENU.reviews.pop();
+    alert('حدث خطأ — تحقق من الاتصال');
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = 'إرسال التقييم';
+  }
 }
 
-// ── Category scroll ────────────────────────────────────────────────────────
-function scrollToSection(catId, btn) {
+// ── Search & nav ──────────────────────────────────────────────────────────
+function doSearch(q){
+  q = q.trim().toLowerCase();
+  let any = false;
+  document.querySelectorAll('.cat-section').forEach(sec=>{
+    let vis = false;
+    sec.querySelectorAll('.item-card').forEach(card=>{
+      const txt = card.textContent.toLowerCase();
+      const m = !q || txt.includes(q);
+      card.style.display = m ? '' : 'none';
+      if(m){ vis=true; any=true; }
+    });
+    sec.style.display = vis ? '' : 'none';
+  });
+  document.getElementById('noResults').style.display = any ? 'none' : 'block';
+}
+
+function scrollToSec(id,btn){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  const sec = document.getElementById('sec-'+catId);
-  if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function filterCat(catId, btn) {
+function filterAll(btn){
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.cat-section').forEach(s=>s.style.display='');
@@ -321,7 +373,21 @@ function filterCat(catId, btn) {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
+// ── Language ──────────────────────────────────────────────────────────────
+function setLang(l){
+  lang=l; localStorage.setItem('gustu_lang',l); applyLang(l);
+}
+function applyLang(l){
+  document.body.classList.toggle('en-mode',l==='en');
+  document.documentElement.setAttribute('dir',l==='ar'?'rtl':'ltr');
+  document.getElementById('btnAr')?.classList.toggle('active',l==='ar');
+  document.getElementById('btnEn')?.classList.toggle('active',l==='en');
+  document.querySelectorAll('.t-ar').forEach(el=>el.style.display=l==='ar'?'':'none');
+  document.querySelectorAll('.t-en').forEach(el=>el.style.display=l==='en'?'':'none');
+  const inp=document.getElementById('searchInput');
+  if(inp) inp.placeholder=l==='ar'?'ابحث عن صنف…':'Search items…';
+}
+
 loadMenu();
 </script>
 </body>
