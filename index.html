@@ -161,9 +161,11 @@ let activeCategory = 'all';
 // ── Load menu data ─────────────────────────────────────────────────────────
 async function loadMenu() {
   try {
-    // Cache bust to always get latest prices
-    const res = await fetch('menu.json?v=' + Date.now());
-    MENU = await res.json();
+    const res = await fetch('https://api.jsonbin.io/v3/b/6a3bc497da38895dfef709cf/latest', {
+      headers: { 'X-Master-Key': '$2a$10$pK5If.28NeQdWrZONPlU0OZHN29r4gUDb5dysLav0TvlQPwjr.sFG' }
+    });
+    const data = await res.json();
+    MENU = data.record;
     renderApp();
   } catch(e) {
     document.getElementById('app').innerHTML =
