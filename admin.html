@@ -5,406 +5,321 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GUSTU Admin</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-:root{--red:#C0392B;--navy:#1B2E4B;--gold:#E67E22;--green:#1A7A56;
-      --red-l:#FADBD8;--green-l:#D5F5E3;--gold-l:#FEF5E7;--navy-l:#EBF0F7;
-      --bg:#F4F2EE;--white:#fff;--border:#E0D8CC;--muted:#6B7280}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--navy);direction:rtl;min-height:100vh}
-
-/* Auth */
+body{font-family:Arial,sans-serif;background:#F4F2EE;direction:rtl;min-height:100vh}
 #authWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-box{background:var(--white);border-radius:16px;padding:2.5rem;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.12)}
-.auth-icon{font-size:48px;margin-bottom:12px}
-.auth-title{font-size:22px;font-weight:800;margin-bottom:6px}
-.auth-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
-.auth-input{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'Cairo',sans-serif;text-align:center;direction:ltr;margin-bottom:10px}
-.auth-input:focus{outline:none;border-color:var(--red)}
-.auth-btn{width:100%;padding:12px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif}
-.auth-err{color:var(--red);font-size:13px;margin-top:8px}
-
-/* App */
+.abox{background:#fff;border-radius:16px;padding:2.5rem;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.12)}
+.abox h2{font-size:20px;font-weight:700;margin-bottom:6px;color:#1B2E4B}
+.abox p{font-size:13px;color:#888;margin-bottom:20px}
+.abox input{width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;text-align:center;direction:ltr;margin-bottom:10px;font-family:Arial}
+.abox input:focus{outline:none;border-color:#C0392B}
+.abtn{width:100%;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer}
+.aerr{color:#C0392B;font-size:13px;margin-top:8px}
 #app{display:none}
-.topbar{background:var(--navy);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--red)}
+.topbar{background:#1B2E4B;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:100;border-bottom:2px solid #C0392B}
 .topbar h1{font-size:14px;font-weight:700;color:#fff}
-.save-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;display:flex;align-items:center;gap:6px}
-.save-btn:hover{background:#145e3f}
-.save-btn:disabled{background:#aaa;cursor:not-allowed}
-
+.savebtn{background:#1A7A56;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
+.savebtn:disabled{background:#aaa;cursor:not-allowed}
 .main{padding:1.25rem;max-width:960px;margin:0 auto}
-
-/* Status banner */
-.banner{border-radius:10px;padding:12px 16px;margin-bottom:1rem;font-size:13px;display:flex;align-items:center;gap:10px}
-.banner-info{background:var(--navy-l);border-right:4px solid var(--navy);color:var(--navy)}
-.banner-success{background:var(--green-l);border-right:4px solid var(--green);color:#0e5e3a}
-.banner-error{background:var(--red-l);border-right:4px solid var(--red);color:var(--red)}
-.banner-gold{background:var(--gold-l);border-right:4px solid var(--gold);color:#7a4a00}
-
-/* Token section */
-.token-card{background:var(--white);border-radius:12px;border:.5px solid var(--border);padding:1.25rem;margin-bottom:1.25rem}
-.token-card h3{font-size:14px;font-weight:700;margin-bottom:12px}
-.token-row{display:flex;gap:8px}
-.token-input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Cairo',sans-serif;direction:ltr}
-.token-input:focus{outline:none;border-color:var(--navy)}
-.token-btn{padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;white-space:nowrap}
-.token-btn:hover{background:#0f1e33}
-.token-steps{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.9}
-.token-steps a{color:var(--navy);font-weight:600}
-.token-saved{font-size:12px;color:var(--green);margin-top:6px;display:none}
-
-/* Category tabs */
-.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
-.cat-tab{padding:7px 18px;border:1.5px solid var(--border);border-radius:30px;background:var(--white);cursor:pointer;font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;color:var(--navy);transition:all .15s}
-.cat-tab.on{background:var(--red);border-color:var(--red);color:#fff}
-
-/* Items table */
-.tbl-card{background:var(--white);border-radius:12px;border:.5px solid var(--border);overflow:hidden;margin-bottom:1rem}
-.tbl-head{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-.tbl-head h3{font-size:14px;font-weight:700;color:#fff}
-.add-btn{font-size:12px;padding:5px 12px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;cursor:pointer;font-family:'Cairo',sans-serif;font-weight:700}
-
+.card{background:#fff;border-radius:12px;border:.5px solid #ddd;padding:1.25rem;margin-bottom:1rem}
+.card h3{font-size:14px;font-weight:700;margin-bottom:12px;color:#1B2E4B}
+.trow{display:flex;gap:8px;margin-bottom:8px}
+.tinput{flex:1;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;direction:ltr;font-family:monospace}
+.tinput:focus{outline:none;border-color:#1B2E4B}
+.tbtn{padding:9px 14px;background:#1B2E4B;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tsaved{font-size:12px;color:#1A7A56;margin-top:6px;display:none}
+.twarn{background:#FEF5E7;border-right:4px solid #E67E22;padding:10px 12px;border-radius:0 8px 8px 0;font-size:12px;color:#7a4a00;margin-bottom:12px}
+.tsteps{font-size:12px;color:#888;margin-top:10px;line-height:1.9}
+.tsteps a{color:#1B2E4B;font-weight:700}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
+.tab{padding:7px 18px;border:1.5px solid #ddd;border-radius:30px;background:#fff;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial;color:#1B2E4B}
+.tab.on{background:#C0392B;border-color:#C0392B;color:#fff}
+.tcard{background:#fff;border-radius:12px;border:.5px solid #ddd;overflow:hidden}
+.thead{background:#1B2E4B;padding:11px 16px;display:flex;align-items:center;justify-content:space-between}
+.thead span{font-size:14px;font-weight:700;color:#fff}
+.addbtn{font-size:12px;padding:5px 12px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;cursor:pointer;font-family:Arial;font-weight:700}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:right;padding:9px 12px;font-size:10px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border);background:#FAF8F5;letter-spacing:.05em}
-td{padding:8px 12px;border-bottom:.5px solid var(--border);vertical-align:middle}
+th{text-align:right;padding:9px 12px;font-size:10px;font-weight:700;color:#888;border-bottom:1px solid #eee;background:#fafaf8;letter-spacing:.05em}
+td{padding:8px 12px;border-bottom:.5px solid #eee;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover{background:#FFF9F5}
-
-.ei{border:1.5px solid transparent;border-radius:6px;padding:5px 8px;font-size:13px;font-family:'Cairo',sans-serif;background:transparent;color:var(--navy);width:100%;direction:rtl}
-.ei:focus{outline:none;border-color:var(--red);background:#fff}
-.pi{width:80px;direction:ltr;text-align:center;font-weight:700;color:var(--red)}
-.tag-sel{border:1.5px solid var(--border);border-radius:6px;padding:5px 6px;font-size:11px;font-family:'Cairo',sans-serif;background:#fff;color:var(--navy)}
-.tag-sel:focus{outline:none;border-color:var(--red)}
-.del-btn{background:var(--red-l);color:var(--red);border:1px solid var(--red);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:'Cairo',sans-serif;font-weight:700}
-.del-btn:hover{background:var(--red);color:#fff}
-
-/* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:30px;font-size:13px;font-family:'Cairo',sans-serif;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+tr:hover{background:#fffaf8}
+.ei{border:1.5px solid transparent;border-radius:6px;padding:5px 8px;font-size:13px;font-family:Arial;background:transparent;color:#1B2E4B;width:100%;direction:rtl}
+.ei:focus{outline:none;border-color:#C0392B;background:#fff}
+.pi{width:80px;direction:ltr;text-align:center;font-weight:700;color:#C0392B}
+.tsel{border:1.5px solid #ddd;border-radius:6px;padding:5px 6px;font-size:11px;font-family:Arial;background:#fff;color:#1B2E4B}
+.dbtn{background:#FADBD8;color:#C0392B;border:1px solid #C0392B;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:Arial;font-weight:700}
+.dbtn:hover{background:#C0392B;color:#fff}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:30px;font-size:13px;font-family:Arial;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-.toast.ok{background:#1A7A56;color:#fff}
-.toast.err{background:var(--red);color:#fff}
-.toast.info{background:var(--navy);color:#fff}
-
-/* Saving overlay */
-.overlay{position:fixed;inset:0;background:rgba(27,46,75,.7);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
-.overlay.show{display:flex}
-.spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
-.overlay-text{color:#fff;font-size:16px;font-weight:700}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-code{background:var(--navy-l);padding:2px 7px;border-radius:4px;font-size:11px;font-family:monospace;direction:ltr;display:inline-block}
+.tok{background:#1A7A56;color:#fff}
+.terr{background:#C0392B;color:#fff}
+.tinf{background:#1B2E4B;color:#fff}
+.ovl{position:fixed;inset:0;background:rgba(27,46,75,.7);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.ovl.show{display:flex}
+.spin{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+.otxt{color:#fff;font-size:15px;font-weight:700}
+@keyframes sp{to{transform:rotate(360deg)}}
+.banner{border-radius:10px;padding:12px 16px;margin-bottom:1rem;font-size:13px;display:flex;align-items:center;gap:10px}
+.bsuc{background:#D5F5E3;border-right:4px solid #1A7A56;color:#0e5e3a}
+.berr{background:#FADBD8;border-right:4px solid #C0392B;color:#C0392B}
 </style>
 </head>
 <body>
 
-<!-- Auth -->
 <div id="authWrap">
-  <div class="auth-box">
-    <div class="auth-icon">🔐</div>
-    <div class="auth-title">GUSTU Admin</div>
-    <div class="auth-sub">لوحة تعديل القائمة — ادخل كلمة السر</div>
-    <input class="auth-input" type="password" id="pwdIn" placeholder="Password"
-           onkeydown="if(event.key==='Enter')login()">
-    <button class="auth-btn" onclick="login()">دخول</button>
-    <div class="auth-err" id="authErr"></div>
-    <div style="margin-top:14px;font-size:11px;color:var(--muted)">Default: gustu2024</div>
+  <div class="abox">
+    <div style="font-size:48px;margin-bottom:12px">🔐</div>
+    <h2>GUSTU Admin</h2>
+    <p id="subTxt">Loading...</p>
+    <input type="password" id="pwdIn" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+    <button class="abtn" onclick="login()" id="loginBtn">Login</button>
+    <div class="aerr" id="authErr"></div>
   </div>
 </div>
 
-<!-- App -->
 <div id="app">
   <div class="topbar">
-    <h1>🍕 GUSTU Admin — تعديل القائمة</h1>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="save-btn" id="saveBtn" onclick="saveToGitHub()" disabled>
-        ☁️ حفظ على GitHub
+    <h1 id="topTitle">GUSTU Admin</h1>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="savebtn" id="saveBtn" onclick="saveGH()" disabled id="saveBtn">
+        <span>&#9729;&#65039;</span> <span id="saveTxt">Save to GitHub</span>
       </button>
       <a href="https://waelelmaghraby234-jpg.github.io/gustu-menu/" target="_blank"
-         style="font-size:12px;color:rgba(255,255,255,.6);text-decoration:none">👁️ معاينة</a>
+         style="font-size:12px;color:rgba(255,255,255,.6);text-decoration:none">&#128065;&#65039;</a>
     </div>
   </div>
 
   <div class="main">
-
-    <!-- GitHub Token setup -->
-    <div class="token-card" id="tokenCard">
-      <h3>🔑 ربط GitHub — مرة واحدة فقط</h3>
-      <div id="tokenBanner" class="banner banner-gold">
-        ⚠️ أدخل GitHub Token مرة واحدة وبعدين الحفظ هيبقى بضغطة زرار واحدة فوراً
+    <div class="card" id="tokenCard">
+      <h3 id="tkTitle">GitHub Connection</h3>
+      <div class="twarn" id="tkWarn"></div>
+      <div class="trow">
+        <input class="tinput" type="password" id="tokenIn" placeholder="ghp_xxxxxxxxxxxxxxxx">
+        <button class="tbtn" onclick="saveToken()" id="tkBtn">Save</button>
       </div>
-      <div class="token-row" style="margin-top:12px">
-        <input class="token-input" type="password" id="tokenIn"
-               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-        <button class="token-btn" onclick="saveToken()">حفظ Token</button>
-      </div>
-      <div class="token-saved" id="tokenSaved">✅ Token محفوظ — يمكنك الحفظ المباشر الآن</div>
-      <div class="token-steps">
-        <strong>كيف تحصل على Token؟</strong><br>
-        1. افتح <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
-        2. في Note اكتب: <code>gustu-menu</code><br>
-        3. Expiration: <code>No expiration</code><br>
-        4. ضع ✅ على <code>repo</code> فقط<br>
-        5. اضغط Generate token ← انسخه هنا
-      </div>
+      <div class="tsaved" id="tokenSaved"></div>
+      <div class="tsteps" id="tkSteps"></div>
     </div>
 
-    <!-- Category tabs -->
-    <div class="cat-tabs" id="catTabs"></div>
-
-    <!-- Items table -->
-    <div class="tbl-card">
-      <div class="tbl-head">
-        <h3 id="tblTitle">الأصناف</h3>
-        <button class="add-btn" onclick="addItem()">➕ إضافة صنف</button>
+    <div class="tabs" id="catTabs"></div>
+    <div class="tcard">
+      <div class="thead">
+        <span id="tblTitle">Items</span>
+        <button class="addbtn" onclick="addItem()" id="addBtn">+ Add</button>
       </div>
       <div style="overflow-x:auto">
         <table>
           <thead><tr>
-            <th>اسم الصنف (عربي)</th>
-            <th>Name (English)</th>
-            <th>السعر (ج)</th>
-            <th>تمييز</th>
+            <th id="colName">Name (AR)</th>
+            <th>Name (EN)</th>
+            <th id="colPrice">Price</th>
+            <th id="colTag">Tag</th>
             <th style="width:50px"></th>
           </tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- Saving overlay -->
-<div class="overlay" id="overlay">
-  <div class="spinner"></div>
-  <div class="overlay-text" id="overlayText">جاري الحفظ على GitHub...</div>
+<div class="ovl" id="ovl">
+  <div class="spin"></div>
+  <div class="otxt" id="ovlTxt">Loading...</div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Config ──────────────────────────────────────────────────────────────────
-const PWD    = 'gustu2024';
-const OWNER  = 'waelelmaghraby234-jpg';
-const REPO   = 'gustu-menu';
-const FILE   = 'menu.json';
-const BRANCH = 'main';
+const PWD='gustu2024', OWNER='waelelmaghraby234-jpg', REPO='gustu-menu', FILE='menu.json', BRANCH='main';
+let MENU=null, activeCat=0, fileSha='';
 
-// ── State ───────────────────────────────────────────────────────────────────
-let MENU = null;
-let activeCat = 0;
-let fileSha = '';
+// All UI text in JS (no Arabic in HTML)
+const T={
+  subtitle:'Menu Editor Panel',
+  loginBtn:'Login',
+  wrongPwd:'Wrong password',
+  tkTitle:'GitHub Connection — once only',
+  tkWarn:'Enter your GitHub Token once — then save with one click',
+  tkSaved:'Token saved — direct save enabled',
+  tkSteps:'How to get a token:\n1. Open: github.com/settings/tokens/new\n2. Note: gustu-menu\n3. Expiration: No expiration\n4. Check: repo only\n5. Generate token — copy it here',
+  tkBtn:'Save Token',
+  saveBtn:'Save to GitHub',
+  saving:'Saving to GitHub...',
+  loading:'Loading menu...',
+  saved:'Saved! Customers see new prices now',
+  colName:'Name (AR)',
+  colPrice:'Price (EGP)',
+  colTag:'Tag',
+  addBtn:'+ Add Item',
+  delConfirm:'Delete this item?',
+  tagNone:'—',
+  tagPop:'Popular',
+  tagNew:'New',
+  topTitle:'GUSTU Admin — Menu Editor',
+  noToken:'Enter GitHub Token first',
+  connErr:'Connection error',
+  authErr:'Wrong password',
+};
 
-// ── Auth ────────────────────────────────────────────────────────────────────
+document.getElementById('subTxt').textContent = T.subtitle;
+document.getElementById('loginBtn').textContent = T.loginBtn;
+document.getElementById('tkTitle').textContent = T.tkTitle;
+document.getElementById('tkWarn').textContent = T.tkWarn;
+document.getElementById('tkBtn').textContent = T.tkBtn;
+document.getElementById('tokenSaved').textContent = T.tkSaved;
+document.getElementById('tkSteps').innerHTML = T.tkSteps.split('\n').join('<br>');
+document.getElementById('saveTxt').textContent = T.saveBtn;
+document.getElementById('topTitle').textContent = T.topTitle;
+document.getElementById('addBtn').textContent = T.addBtn;
+document.getElementById('colName').textContent = T.colName;
+document.getElementById('colPrice').textContent = T.colPrice;
+document.getElementById('colTag').textContent = T.colTag;
+
+function getToken(){return localStorage.getItem('gh_token_gustu')||'';}
+
 function login(){
-  const p = document.getElementById('pwdIn').value;
-  if(p === PWD){
-    document.getElementById('authWrap').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+  if(document.getElementById('pwdIn').value===PWD){
+    document.getElementById('authWrap').style.display='none';
+    document.getElementById('app').style.display='block';
+    if(getToken()){
+      document.getElementById('tkWarn').style.display='none';
+      document.getElementById('tokenSaved').style.display='block';
+      document.getElementById('saveBtn').disabled=false;
+    }
     init();
   } else {
-    document.getElementById('authErr').textContent = '❌ كلمة السر غلط';
-    document.getElementById('pwdIn').value = '';
+    document.getElementById('authErr').textContent=T.authErr;
+    document.getElementById('pwdIn').value='';
   }
 }
-document.getElementById('pwdIn').addEventListener('keydown', e => {
-  if(e.key === 'Enter') login();
-});
-
-// ── Token ───────────────────────────────────────────────────────────────────
-function getToken(){ return localStorage.getItem('gh_token_gustu') || ''; }
 
 function saveToken(){
-  const t = document.getElementById('tokenIn').value.trim();
-  if(!t){ toast('أدخل التوكن أولاً', 'err'); return; }
-  localStorage.setItem('gh_token_gustu', t);
-  document.getElementById('tokenSaved').style.display = 'block';
-  document.getElementById('tokenBanner').style.display = 'none';
-  document.getElementById('tokenIn').value = '';
-  document.getElementById('saveBtn').disabled = false;
-  toast('✅ Token محفوظ بنجاح', 'ok');
+  const t=document.getElementById('tokenIn').value.trim();
+  if(!t){toast(T.noToken,'terr');return;}
+  localStorage.setItem('gh_token_gustu',t);
+  document.getElementById('tokenSaved').style.display='block';
+  document.getElementById('tkWarn').style.display='none';
+  document.getElementById('tokenIn').value='';
+  document.getElementById('saveBtn').disabled=false;
+  toast(T.tkSaved,'tok');
 }
 
-// ── Init ────────────────────────────────────────────────────────────────────
 async function init(){
-  // Check existing token
-  if(getToken()){
-    document.getElementById('tokenBanner').style.display = 'none';
-    document.getElementById('tokenSaved').style.display = 'block';
-    document.getElementById('saveBtn').disabled = false;
-  }
-
-  // Load menu from GitHub directly
-  try {
-    showOverlay('جاري تحميل القائمة...');
-    const res = await fetch(
-      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`,
-      { headers: getToken() ? { Authorization: `token ${getToken()}` } : {} }
-    );
-    const data = await res.json();
-    fileSha = data.sha;
-    MENU = JSON.parse(atob(data.content.replace(/\n/g,'')));
-    hideOverlay();
+  showOvl(T.loading);
+  try{
+    const headers=getToken()?{Authorization:'token '+getToken()}:{};
+    const res=await fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+FILE,{headers});
+    const data=await res.json();
+    fileSha=data.sha;
+    MENU=JSON.parse(atob(data.content.replace(/\n/g,'')));
+    hideOvl();
     renderTabs();
     renderTable();
-    toast('✅ تم تحميل القائمة من GitHub', 'ok');
+    toast(T.saved.replace('Saved!','Loaded!'),'tinf');
   } catch(e){
-    hideOverlay();
-    // Fallback: load from local menu.json
-    try {
-      const r2 = await fetch('menu.json?v='+Date.now());
-      MENU = await r2.json();
-      renderTabs();
-      renderTable();
-      banner('banner-gold','⚠️ تم التحميل من النسخة المحلية — أدخل Token للحفظ المباشر');
-    } catch(e2){
-      banner('banner-error','❌ تعذر تحميل القائمة — تأكد من اتصال الإنترنت');
-    }
+    hideOvl();
+    try{
+      const r2=await fetch('menu.json?v='+Date.now());
+      MENU=await r2.json();
+      renderTabs(); renderTable();
+    } catch(e2){toast(T.connErr,'terr');}
   }
 }
 
-// ── Render ───────────────────────────────────────────────────────────────────
 function renderTabs(){
-  document.getElementById('catTabs').innerHTML = MENU.categories.map((c,i)=>
-    `<button class="cat-tab ${i===activeCat?'on':''}" onclick="switchCat(${i})">
-      ${c.emoji} ${c.name_ar}
-    </button>`).join('');
+  document.getElementById('catTabs').innerHTML=MENU.categories.map((c,i)=>
+    '<button class="tab '+(i===activeCat?'on':'')+'" onclick="sw('+i+')">'
+    +c.emoji+' '+c.name_ar+'</button>'
+  ).join('');
 }
 
-function switchCat(i){ activeCat=i; renderTabs(); renderTable(); }
+function sw(i){activeCat=i;renderTabs();renderTable();}
 
 function renderTable(){
-  const cat = MENU.categories[activeCat];
-  document.getElementById('tblTitle').textContent = `${cat.emoji} ${cat.name_ar} — ${cat.name_en}`;
-  document.getElementById('tbody').innerHTML = cat.items.map((item,i)=>`
+  const cat=MENU.categories[activeCat];
+  document.getElementById('tblTitle').textContent=cat.emoji+' '+cat.name_ar+' — '+cat.name_en;
+  document.getElementById('tbody').innerHTML=cat.items.map((item,i)=>`
     <tr>
-      <td><input class="ei" value="${esc(item.name_ar)}"
-          onchange="upd(${i},'name_ar',this.value)"></td>
-      <td><input class="ei" style="direction:ltr" value="${esc(item.name_en)}"
-          onchange="upd(${i},'name_en',this.value)"></td>
-      <td><input class="ei pi" type="number" value="${item.price}"
-          onchange="upd(${i},'price',+this.value)"></td>
+      <td><input class="ei" value="${esc(item.name_ar)}" onchange="upd(${i},'name_ar',this.value)"></td>
+      <td><input class="ei" style="direction:ltr" value="${esc(item.name_en)}" onchange="upd(${i},'name_en',this.value)"></td>
+      <td><input class="ei pi" type="number" value="${item.price}" onchange="upd(${i},'price',+this.value)"></td>
       <td>
-        <select class="tag-sel" onchange="upd(${i},'tag',this.value)">
+        <select class="tsel" onchange="upd(${i},'tag',this.value)">
           <option value="" ${!item.tag?'selected':''}>—</option>
-          <option value="popular" ${item.tag==='popular'?'selected':''}>⭐ الأكثر طلباً</option>
-          <option value="new" ${item.tag==='new'?'selected':''}>✨ جديد</option>
+          <option value="popular" ${item.tag==='popular'?'selected':''}>Popular</option>
+          <option value="new" ${item.tag==='new'?'selected':''}>New</option>
         </select>
       </td>
-      <td><button class="del-btn" onclick="delItem(${i})">🗑️</button></td>
+      <td><button class="dbtn" onclick="delItem(${i})">&#128465;</button></td>
     </tr>`).join('');
 }
 
-const esc = s => (s||'').replace(/"/g,'&quot;');
-function upd(i,f,v){ MENU.categories[activeCat].items[i][f]=v; }
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function upd(i,f,v){MENU.categories[activeCat].items[i][f]=v;}
 
 function addItem(){
-  MENU.categories[activeCat].items.push({
-    name_ar:'صنف جديد',name_en:'New Item',
-    price:0,desc_ar:'',desc_en:'',tag:''
-  });
+  MENU.categories[activeCat].items.push({name_ar:'New Item',name_en:'New Item',price:0,desc_ar:'',desc_en:'',tag:''});
   renderTable();
-  toast('تمت الإضافة — عدّل البيانات ثم احفظ', 'info');
 }
 
 function delItem(i){
-  if(!confirm('هل تريد حذف هذا الصنف؟')) return;
+  if(!confirm(T.delConfirm))return;
   MENU.categories[activeCat].items.splice(i,1);
   renderTable();
-  toast('تم الحذف', 'info');
 }
 
-// ── Save to GitHub ───────────────────────────────────────────────────────────
-async function saveToGitHub(){
-  const token = getToken();
-  if(!token){
-    toast('⚠️ أدخل GitHub Token أولاً', 'err');
-    document.getElementById('tokenIn').focus();
-    return;
-  }
-
-  MENU.last_updated = new Date().toISOString().split('T')[0];
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(MENU, null, 2))));
-
-  showOverlay('جاري الحفظ على GitHub...');
-  document.getElementById('saveBtn').disabled = true;
-
-  try {
-    // Get latest SHA if we don't have it
+async function saveGH(){
+  const token=getToken();
+  if(!token){toast(T.noToken,'terr');return;}
+  MENU.last_updated=new Date().toISOString().split('T')[0];
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(MENU,null,2))));
+  showOvl(T.saving);
+  document.getElementById('saveBtn').disabled=true;
+  try{
     if(!fileSha){
-      const r = await fetch(
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`,
-        { headers:{ Authorization:`token ${token}` } }
-      );
-      const d = await r.json();
-      fileSha = d.sha;
+      const r=await fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+FILE,
+        {headers:{Authorization:'token '+token}});
+      fileSha=(await r.json()).sha;
     }
-
-    const res = await fetch(
-      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`,
-      {
-        method: 'PUT',
-        headers:{
-          Authorization: `token ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: `تحديث القائمة ${new Date().toLocaleDateString('ar-EG')}`,
-          content: content,
-          sha: fileSha,
-          branch: BRANCH
-        })
-      }
-    );
-
-    const result = await res.json();
-    hideOverlay();
-
+    const res=await fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+FILE,{
+      method:'PUT',
+      headers:{Authorization:'token '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({message:'Update menu',content,sha:fileSha,branch:BRANCH})
+    });
+    const result=await res.json();
+    hideOvl();
+    document.getElementById('saveBtn').disabled=false;
     if(res.ok){
-      fileSha = result.content.sha;
-      document.getElementById('saveBtn').disabled = false;
-      toast('✅ تم الحفظ على GitHub! القائمة محدّثة للعملاء فوراً', 'ok');
-      banner('banner-success', '✅ تم التحديث بنجاح — العملاء يشوفون الأسعار الجديدة الآن');
+      fileSha=result.content.sha;
+      toast(T.saved,'tok');
+      showBanner(T.saved,'bsuc');
     } else {
-      document.getElementById('saveBtn').disabled = false;
-      if(res.status === 401){
-        toast('❌ Token غلط أو منتهي — أدخل token جديد', 'err');
-        localStorage.removeItem('gh_token_gustu');
-      } else if(res.status === 409){
-        // Conflict: fetch fresh SHA and retry
-        toast('جاري إعادة المحاولة...', 'info');
-        fileSha = '';
-        setTimeout(saveToGitHub, 1000);
-      } else {
-        toast('❌ خطأ: ' + (result.message||'حاول مرة تانية'), 'err');
-      }
+      if(res.status===401){localStorage.removeItem('gh_token_gustu');}
+      else if(res.status===409){fileSha='';setTimeout(saveGH,1000);}
+      else toast(T.connErr+' ('+res.status+')','terr');
     }
   } catch(e){
-    hideOverlay();
-    document.getElementById('saveBtn').disabled = false;
-    toast('❌ مشكلة في الاتصال — تأكد من الإنترنت', 'err');
+    hideOvl();
+    document.getElementById('saveBtn').disabled=false;
+    toast(T.connErr,'terr');
   }
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function showOverlay(msg){
-  document.getElementById('overlayText').textContent = msg;
-  document.getElementById('overlay').classList.add('show');
-}
-function hideOverlay(){ document.getElementById('overlay').classList.remove('show'); }
+function showOvl(msg){document.getElementById('ovlTxt').textContent=msg;document.getElementById('ovl').classList.add('show');}
+function hideOvl(){document.getElementById('ovl').classList.remove('show');}
 
-function toast(msg, type='info', dur=3500){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(()=>t.classList.remove('show'), dur);
+function toast(msg,cls,dur=3500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+cls+' show';
+  setTimeout(()=>t.classList.remove('show'),dur);
 }
 
-function banner(cls, msg){
-  const existing = document.querySelector('.banner-dynamic');
-  if(existing) existing.remove();
-  const div = document.createElement('div');
-  div.className = `banner ${cls} banner-dynamic`;
-  div.textContent = msg;
-  document.querySelector('.main').prepend(div);
+function showBanner(msg,cls){
+  document.querySelectorAll('.dynbanner').forEach(e=>e.remove());
+  const d=document.createElement('div');
+  d.className='banner '+cls+' dynbanner';
+  d.textContent=msg;
+  document.querySelector('.main').prepend(d);
 }
 </script>
 </body>
