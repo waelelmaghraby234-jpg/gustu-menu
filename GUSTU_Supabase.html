@@ -6,7 +6,6 @@
 <title>GUSTU — نظام إدارة المطعم</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
@@ -821,57 +820,49 @@ const SEED_DATA = {"products": [{"id": 1, "name": "بيتزا مارغريتا �
 
 
 // ══════════════════════════════════════════════════════
-// SUPABASE CONFIG
+// SUPABASE CONFIG — Direct REST API (no SDK needed)
 // ══════════════════════════════════════════════════════
-const SB_URL  = 'https://yyjwomvyqcezihmnxuen.supabase.co';
-const SB_KEY  = 'sb_publishable_HarrXIUXc-9v8IaZHL_P5w_NDZ7nD_4';
-const _sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+const SB_URL = 'https://yyjwomvyqcezihmnxuen.supabase.co';
+const SB_KEY = 'sb_publishable_HarrXIUXc-9v8IaZHL_P5w_NDZ7nD_4';
 
-// Supabase REST helper
+const SB_HEADERS = {
+  'apikey': SB_KEY,
+  'Authorization': `Bearer ${SB_KEY}`,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation'
+};
+
 const sb = {
-  async get(table, params=''){
-    if(!_sb) throw new Error('Supabase not loaded');
-    let q = _sb.from(table).select('*');
-    // parse simple params string
-    if(params.includes('gte.')) {
-      const m = params.match(/([a-z_]+)=gte\.([^&]+)/g)||[];
-      m.forEach(p=>{ const [k,v]=p.split('=gte.'); q=q.gte(k,v); });
-    }
-    if(params.includes('lte.')) {
-      const m = params.match(/([a-z_]+)=lte\.([^&]+)/g)||[];
-      m.forEach(p=>{ const [k,v]=p.split('=lte.'); q=q.lte(k,v); });
-    }
-    if(params.includes('eq.')) {
-      const m = params.match(/([a-z_]+)=eq\.([^&]+)/g)||[];
-      m.forEach(p=>{ const [k,...rest]=p.split('=eq.'); q=q.eq(k,rest.join('=eq.')); });
-    }
-    if(params.includes('order=')) {
-      const m = params.match(/order=([^&]+)/); 
-      if(m){ const [col,dir]=(m[1]||'').split('.'); if(col) q=q.order(col,{ascending:dir!=='desc'}); }
-    }
-    const {data,error} = await q;
-    if(error) throw new Error(error.message);
-    return data||[];
+  async get(table, params='') {
+    const url = `${SB_URL}/rest/v1/${table}?${params}`;
+    const r = await fetch(url, { headers: SB_HEADERS });
+    if(!r.ok) { const e=await r.text(); throw new Error(`GET ${table}: ${e}`); }
+    return r.json();
   },
-  async post(table, data){
-    const {data:d,error} = await _sb.from(table).insert(Array.isArray(data)?data:[data]).select();
-    if(error) throw new Error(error.message);
-    return d||[];
+  async post(table, data) {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: SB_HEADERS,
+      body: JSON.stringify(Array.isArray(data) ? data : [data])
+    });
+    if(!r.ok) { const e=await r.text(); throw new Error(`POST ${table}: ${e}`); }
+    return r.json();
   },
-  async patch(table, filter, updates){
-    let q = _sb.from(table).update(updates);
-    const m = filter.match(/([a-z_]+)=eq\.(.+)/);
-    if(m) q=q.eq(m[1],m[2]);
-    const {data,error} = await q.select();
-    if(error) throw new Error(error.message);
-    return data||[];
+  async patch(table, filter, data) {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?${filter}`, {
+      method: 'PATCH',
+      headers: SB_HEADERS,
+      body: JSON.stringify(data)
+    });
+    if(!r.ok) { const e=await r.text(); throw new Error(`PATCH ${table}: ${e}`); }
+    return r.json();
   },
-  async del(table, filter){
-    let q = _sb.from(table).delete();
-    const m = filter.match(/([a-z_]+)=(?:eq|gt)\.(.+)/);
-    if(m) q = filter.includes('gt.') ? q.gt(m[1],m[2]) : q.eq(m[1],m[2]);
-    const {error} = await q;
-    if(error) throw new Error(error.message);
+  async del(table, filter) {
+    const r = await fetch(`${SB_URL}/rest/v1/${table}?${filter}`, {
+      method: 'DELETE',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' }
+    });
+    if(!r.ok) { const e=await r.text(); throw new Error(`DEL ${table}: ${e}`); }
     return true;
   }
 };
@@ -881,9 +872,9 @@ let C = { products:[], ingredients:[], recipes:[] };
 
 async function loadCache(){
   const [prods, ings, recs] = await Promise.all([
-    sb.get('products','active=eq.true&order=category.asc'),
-    sb.get('ingredients','order=name.asc'),
-    sb.get('recipes','')
+    sb.get('products','select=*&active=eq.true&order=category,name'),
+    sb.get('ingredients','select=*&order=name'),
+    sb.get('recipes','select=*')
   ]);
   C.products    = prods;
   C.ingredients = ings;
@@ -892,8 +883,8 @@ async function loadCache(){
 
 async function checkAndSeedDB(){
   // Check if products table is empty → seed it
-  const prods = await sb.get('products','');
-  if(prods.length > 0){ C.products=prods; return; }
+  const prods = await sb.get('products','select=id&limit=1');
+  if(prods.length > 0){ return; }
   // Seed products
   showOvl('رفع البيانات الأولية...');
   const seedProds = SEED_DATA.products.map(p=>{
@@ -930,6 +921,39 @@ async function checkAndSeedDB(){
 
 async function initApp(){
   document.getElementById('dateBadge').textContent=new Date().toLocaleDateString('ar-EG',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+
+  // Detect file:// opening — show helpful message
+  if(window.location.protocol === 'file:'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.querySelector('.main .content').innerHTML=`
+      <div style="max-width:520px;margin:60px auto;text-align:center;direction:rtl">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <div style="font-size:20px;font-weight:700;color:#1B2E4B;margin-bottom:10px">
+          البرنامج محتاج يشتغل من الإنترنت
+        </div>
+        <div style="font-size:14px;color:#718096;margin-bottom:24px;line-height:1.8">
+          لأن البرنامج متصل بـ Supabase، لازم يتفتح من رابط على الإنترنت —
+          مش من جهازك مباشرة.
+        </div>
+        <div style="background:#F0F4FF;border-radius:12px;padding:20px;text-align:right;margin-bottom:20px">
+          <div style="font-size:13px;font-weight:700;color:#1B2E4B;margin-bottom:12px">📋 الحل — ارفعه على GitHub Pages:</div>
+          <div style="font-size:13px;color:#718096;line-height:2">
+            1. روح: <strong style="font-family:monospace;color:#1B2E4B">github.com/waelelmaghraby234-jpg/gustu-menu</strong><br>
+            2. اضغط <strong>Add file ← Upload files</strong><br>
+            3. ارفع ملف <strong>GUSTU_Supabase.html</strong><br>
+            4. اضغط <strong>Commit changes</strong><br>
+            5. افتح: <strong style="font-family:monospace;color:#1B2E4B">waelelmaghraby234-jpg.github.io/gustu-menu/GUSTU_Supabase.html</strong>
+          </div>
+        </div>
+        <a href="https://github.com/waelelmaghraby234-jpg/gustu-menu/upload" target="_blank"
+           style="display:inline-block;background:#1B2E4B;color:#C9A84C;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">
+          🚀 افتح GitHub للرفع
+        </a>
+      </div>`;
+    return;
+  }
+
   showOvl('جاري الاتصال بقاعدة البيانات...');
   try {
     await checkAndSeedDB();
@@ -1011,7 +1035,7 @@ function loadPage(p){
   if(p==='purchases') initPurchases();
   if(p==='expenses')  initExpenses();
   if(p==='stock')     renderStock();
-  if(p==='recipes')   renderRecipeList();
+  if(p==='recipes')   { renderRecipeList(); }
   if(p==='products')  renderProducts();
   if(p==='settings')  loadSettingsPage();
   if(p==='analytics') initAnalytics();
@@ -1021,69 +1045,51 @@ function loadPage(p){
 // ══════════════════════════════════════════════════════
 // DASHBOARD
 // ══════════════════════════════════════════════════════
-function renderDashboard(){
-  const db = getDB();
-  const ms = monthStart(), td = today(), wa = weekAgo();
-
-  const salMonth = db.sales.filter(s=>s.date>=ms && s.date<=td);
-  const purMonth = db.purchases.filter(p=>p.date>=ms && p.date<=td);
-  const expMonth = db.expenses.filter(e=>e.date>=ms && e.date<=td);
-
-  const rev = salMonth.reduce((a,s)=>a+s.total,0);
-  const cos = purMonth.reduce((a,p)=>a+p.total,0);
-  const exp = expMonth.reduce((a,e)=>a+e.amount,0);
-  const np  = rev - cos - exp;
-
-  document.getElementById('dash-kpis').innerHTML =
-    kpi('💰','مبيعات الشهر',EGP(rev),salMonth.length+' فاتورة','gold')+
-    kpi('🛒','مشتريات الشهر',EGP(cos),'تكاليف الخامات','')+
-    kpi('💸','مصروفات الشهر',EGP(exp),'تشغيلية وإدارية','')+
-    kpi('📈','صافي الربح',EGP(np), np>=0?'هامش '+(rev>0?(np/rev*100).toFixed(1):0)+'%':'خسارة', np>=0?'green':'red');
-
-  // Top products
-  const prod_totals = {};
-  salMonth.forEach(s=>{ prod_totals[s.product]=(prod_totals[s.product]||0)+s.total; });
-  const top = Object.entries(prod_totals).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  document.getElementById('dash-top').innerHTML = top.length
-    ? top.map(([name,total],i)=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:16px">${['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'][i]}</span>
-            <span style="font-size:12px;font-weight:600">${name}</span>
-          </div>
-          <span style="color:var(--gold);font-weight:700;font-size:12px">${EGP(total)}</span>
+async function renderDashboard(){
+  const ms=monthStart(), td=today(), wa=weekAgo();
+  try{
+    const [salM,purM,expM,sal7]=await Promise.all([
+      sb.get('sales',`select=total,product,category&sale_date=gte.${ms}&sale_date=lte.${td}`),
+      sb.get('purchases',`select=total&purchase_date=gte.${ms}&purchase_date=lte.${td}`),
+      sb.get('expenses',`select=amount&expense_date=gte.${ms}&expense_date=lte.${td}`),
+      sb.get('sales',`select=sale_date,total&sale_date=gte.${wa}&sale_date=lte.${td}&order=sale_date`)
+    ]);
+    const rev=salM.reduce((a,s)=>a+s.total,0);
+    const cos=purM.reduce((a,p)=>a+p.total,0);
+    const exp=expM.reduce((a,e)=>a+e.amount,0);
+    const np=rev-cos-exp;
+    document.getElementById('dash-kpis').innerHTML=
+      kpi('💰','مبيعات الشهر',EGP(rev),salM.length+' فاتورة','gold')+
+      kpi('🛒','مشتريات الشهر',EGP(cos),'تكاليف الخامات','')+
+      kpi('💸','مصروفات الشهر',EGP(exp),'تشغيلية','')+
+      kpi('📈','صافي الربح',EGP(np),np>=0?'هامش '+(rev>0?(np/rev*100).toFixed(1):0)+'%':'خسارة',np>=0?'green':'red');
+    const pt={};
+    salM.forEach(s=>{pt[s.product]=(pt[s.product]||0)+s.total;});
+    const top=Object.entries(pt).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    document.getElementById('dash-top').innerHTML=top.length
+      ? top.map(([n,v],i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:7px"><span style="font-size:16px">${['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'][i]}</span><span style="font-size:12px;font-weight:600">${n}</span></div>
+          <span style="color:var(--gold);font-weight:700;font-size:12px">${EGP(v)}</span>
         </div>`).join('')
-    : '<div style="color:var(--text2);font-size:13px;text-align:center;padding:16px">لا توجد مبيعات هذا الشهر</div>';
-
-  // Stock alerts
-  const low = db.ingredients.filter(i=>i.qty<=i.min_qty);
-  document.getElementById('dash-stock').innerHTML = low.length
-    ? low.map(i=>`<div class="alert alert-warn">⚠️ <strong>${i.name}</strong> — متبقي ${i.qty} ${i.unit} (الحد الأدنى: ${i.min_qty})</div>`).join('')
-    : '<div class="alert alert-ok">✅ جميع الخامات بمستويات مناسبة</div>';
-
-  // Summary
-  document.getElementById('dash-summary').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:8px">
+      : '<div style="color:var(--text2);font-size:13px;text-align:center;padding:16px">لا توجد مبيعات هذا الشهر</div>';
+    const low=C.ingredients.filter(i=>i.qty<=i.min_qty);
+    document.getElementById('dash-stock').innerHTML=low.length
+      ? low.map(i=>`<div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-bottom:5px;font-size:12px;color:#92400E">⚠️ <strong>${i.name}</strong> — متبقي ${i.qty} ${i.unit}</div>`).join('')
+      : '<div style="background:#F0FFF4;border:1px solid #86EFAC;border-radius:8px;padding:8px 12px;font-size:12px;color:#166534">✅ جميع الخامات بمستويات مناسبة</div>';
+    document.getElementById('dash-sum').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">
       ${[['الإيرادات',EGP(rev),'var(--green)'],['(-) المشتريات',EGP(cos),'var(--red)'],
-         ['(-) المصروفات',EGP(exp),'var(--red)'],['صافي الربح',EGP(np),np>=0?'var(--green)':'var(--red)']
-        ].map(([l,v,c])=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:13px;color:var(--text2)">${l}</span>
-          <span style="font-size:13px;font-weight:700;color:${c}">${v}</span>
-        </div>`).join('')}
-    </div>`;
-
-  // Week chart
-  const days7 = Array.from({length:7},(_,i)=>{ const d=new Date(); d.setDate(d.getDate()-6+i); return d.toISOString().split('T')[0]; });
-  const week_data = days7.map(d=>db.sales.filter(s=>s.date===d).reduce((a,s)=>a+s.total,0));
-  killChart('chartWeek');
-  CH.chartWeek = new Chart(document.getElementById('chartWeek'),{
-    type:'bar',
-    data:{labels:days7.map(d=>d.slice(5)),
-      datasets:[{data:week_data,backgroundColor:'rgba(201,168,76,.35)',borderColor:'#C9A84C',borderWidth:2,borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:axX,y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}
-  });
+         ['(-) المصروفات',EGP(exp),'var(--red)'],['صافي الربح',EGP(np),np>=0?'var(--green)':'var(--red)']].map(([l,v,c])=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text2)">${l}</span><span style="font-size:13px;font-weight:700;color:${c}">${v}</span>
+        </div>`).join('')}</div>`;
+    const days7=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d.toISOString().split('T')[0];});
+    const w7=days7.map(d=>sal7.filter(s=>s.sale_date===d).reduce((a,s)=>a+s.total,0));
+    killChart('chartWeek');
+    CH.chartWeek=new Chart(document.getElementById('chartWeek'),{type:'bar',
+      data:{labels:days7.map(d=>d.slice(5)),datasets:[{data:w7,backgroundColor:'rgba(27,46,75,.2)',borderColor:'#1B2E4B',borderWidth:2,borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:axX,y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}});
+  }catch(e){console.error('Dashboard:',e);}
 }
 
 // ══════════════════════════════════════════════════════
@@ -1093,7 +1099,6 @@ let cart = [];
 let posFilter = 'الكل';
 
 function renderPOS(){
-  const db = getDB();
   renderOpenInvoices();
   const cats = ['الكل',...new Set(db.products.map(p=>p.category))];
   document.getElementById('posCats').innerHTML = cats.map(c=>
@@ -1106,7 +1111,6 @@ function renderPOS(){
 function setPosFilter(cat){ posFilter=cat; renderPOS(); }
 
 function filterProducts(){
-  const db=getDB();
   const q=document.getElementById('posSearch')?.value.toLowerCase()||'';
   const prods=C.products.filter(p=>(posFilter==='الكل'||p.category===posFilter)&&(!q||p.name.includes(q)));
   document.getElementById('posGrid').innerHTML = prods.map(p=>`
@@ -1197,27 +1201,35 @@ function changeQty(i,d){
 
 function clearCart(){ cart=[]; document.getElementById('discValue').value=0; renderCart(); filterProducts(); }
 
-function confirmSale(){
-  if(!cart.length){ toast('أضف صنفاً واحداً على الأقل','tr'); return; }
-  const db=getDB(); const notes=document.getElementById('posNotes').value;
-  const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0);
-  const disc=getDiscount(subtotal);
-  const discVal=+document.getElementById('discValue').value||0;
-  const discNote=discVal>0?(discType==='pct'?` (خصم ${discVal}%)`:(` (خصم ${EGP(discVal)})`)):'';
-  cart.forEach(c=>{
-    const itemTotal=c.price*c.qty;
-    const itemDisc=disc>0?(itemTotal/subtotal)*disc:0;
-    db.sales.push({id:nowId(), date:today(), product:c.name, qty:c.qty,
-      price:c.price, total:+(itemTotal-itemDisc).toFixed(2), category:c.category, notes:notes+discNote});
-    // Deduct stock from recipe
-    const recipe = db.recipes[c.name];
-    if(recipe){ recipe.forEach(r=>{ const ing=db.ingredients.find(i=>i.name===r.ingredient); if(ing) ing.qty=Math.max(0,ing.qty-r.qty*c.qty); }); }
-  });
-  saveDB(db);
-  const total=cart.reduce((a,c)=>a+c.price*c.qty,0);
-  toast(`✅ تم البيع — الإجمالي: ${EGP(total)}`,'tg');
-  cart=[]; document.getElementById('posNotes').value='';
-  renderCart(); filterProducts();
+async function confirmSale(){
+  if(!cart.length){toast('أضف صنفاً واحداً على الأقل','tr');return;}
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const disc=getDiscount(sub);
+  const dv=+document.getElementById('discValue').value||0;
+  const notes=document.getElementById('posNotes').value;
+  const discNote=dv>0?(discType==='pct'?` (خصم ${dv}%)`:(` (خصم ${EGP(dv)})`)): '';
+  showOvl('حفظ الفاتورة...');
+  try{
+    const rows=cart.map(c=>{
+      const it=c.price*c.qty; const id2=disc>0?(it/sub)*disc:0;
+      return {sale_date:today(),product:c.name,category:c.category,qty:c.qty,
+        price:c.price,total:+(it-id2).toFixed(2),discount_amount:+id2.toFixed(2),
+        discount_type:discType,notes:notes+discNote};
+    });
+    await sb.post('sales',rows);
+    for(const c of cart){
+      const recs=C.recipes.filter(r=>r.product_name===c.name);
+      for(const r of recs){
+        const ing=C.ingredients.find(i=>i.name===r.ingredient_name);
+        if(ing){const nq=Math.max(0,ing.qty-r.qty*c.qty);await sb.patch('ingredients',`id=eq.${ing.id}`,{qty:nq});ing.qty=nq;}
+      }
+    }
+    hideOvl();
+    toast(`✅ تم البيع — الإجمالي: ${EGP(sub-disc)}`,'tg');
+    cart=[];document.getElementById('posNotes').value='';document.getElementById('discValue').value=0;
+    renderCart();filterProducts();
+    if(currentInvId){await sb.del('invoices',`id=eq.${currentInvId}`);currentInvId=null;renderOpenInvoices();}
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
 }
 
 // ══════════════════════════════════════════════════════
@@ -1254,7 +1266,7 @@ async function renderSalesTable(){
   const from=document.getElementById('sal-from').value;
   const to=document.getElementById('sal-to').value;
   try{
-    const rows=await sb.get('sales',`sale_date=gte.${from}&sale_date=lte.${to}&order=sale_date.desc`);
+    const rows=await sb.get('sales',`sale_date=gte.${from}&sale_date=lte.${to}&order=sale_date.desc,id.desc`);
     const total=rows.reduce((a,s)=>a+s.total,0);
     document.getElementById('sal-kpis').innerHTML=
       kpi('💰','إجمالي المبيعات',EGP(total),rows.length+' فاتورة','gold')+
@@ -1320,7 +1332,7 @@ async function renderPurTable(){
   const from=document.getElementById('pur-from').value;
   const to=document.getElementById('pur-to').value;
   try{
-    const rows=await sb.get('purchases',`purchase_date=gte.${from}&purchase_date=lte.${to}&order=purchase_date.desc`);
+    const rows=await sb.get('purchases',`purchase_date=gte.${from}&purchase_date=lte.${to}&order=purchase_date.desc,id.desc`);
     const total=rows.reduce((a,p)=>a+p.total,0);
     document.getElementById('pur-kpis').innerHTML=kpi('🛒','إجمالي المشتريات',EGP(total),rows.length+' عملية','');
     document.getElementById('pur-tbl').innerHTML=rows.length
@@ -1362,7 +1374,7 @@ async function renderExpTable(){
   const from=document.getElementById('exp-from').value;
   const to=document.getElementById('exp-to').value;
   try{
-    const rows=await sb.get('expenses',`expense_date=gte.${from}&expense_date=lte.${to}&order=expense_date.desc`);
+    const rows=await sb.get('expenses',`expense_date=gte.${from}&expense_date=lte.${to}&order=expense_date.desc,id.desc`);
     const total=rows.reduce((a,e)=>a+e.amount,0);
     document.getElementById('exp-kpis').innerHTML=kpi('💸','إجمالي المصروفات',EGP(total),rows.length+' بند','');
     document.getElementById('exp-tbl').innerHTML=rows.length
@@ -1381,7 +1393,7 @@ async function renderExpTable(){
 // STOCK
 // ══════════════════════════════════════════════════════
 async function renderStock(){
-  try{ C.ingredients=await sb.get('ingredients','order=name.asc'); }catch(e){}
+  try{ C.ingredients=await sb.get('ingredients','select=*&order=name'); }catch(e){}
   const total_val=C.ingredients.reduce((a,i)=>a+i.qty*i.cost,0);
   document.getElementById('stock-val').textContent='إجمالي قيمة المخزون: '+EGP(total_val);
   document.getElementById('stk-tbl').innerHTML=C.ingredients.map(i=>{
@@ -1463,7 +1475,7 @@ function editRecipe(pname){
 }
 
 function renderRecipeItems(){
-  const db=getDB(); const items=db.recipes[currentRecipe]||[];
+  const items=C.recipes.filter(r=>r.product_name===currentRecipe);
   const totalCost=items.reduce((a,r)=>{ const i=db.ingredients.find(x=>x.name===r.ingredient); return a+(i?i.cost*r.qty:0); },0);
   document.getElementById('rec-items').innerHTML=items.length
     ? items.map((r,i)=>`
@@ -1478,20 +1490,9 @@ function renderRecipeItems(){
   document.getElementById('rec-cost').innerHTML=`<div style='background:#FFF8E7;border:1px solid #FCD34D;border-radius:6px;padding:10px'><strong>تكلفة الوصفة:</strong> <span style='color:var(--red);font-weight:700'>${EGP(totalCost)}</span></div>`;
 }
 
-function addRecipeItem(){
-  const db=getDB(); const ing=document.getElementById('rec-ing').value;
-  const qty=+document.getElementById('rec-qty').value;
-  if(!ing||!qty){ toast('اختر الخامة وأدخل الكمية','tr'); return; }
-  if(!db.recipes[currentRecipe]) db.recipes[currentRecipe]=[];
-  const ex=db.recipes[currentRecipe].find(r=>r.ingredient===ing);
-  const ingObj=db.ingredients.find(i=>i.name===ing);
-  if(ex) ex.qty=qty; else db.recipes[currentRecipe].push({ingredient:ing,qty,unit:ingObj?.unit||''});
-  saveDB(db); renderRecipeItems();
-}
 
-function removeRecipeItem(i){
-  const db=getDB(); db.recipes[currentRecipe].splice(i,1);
-  saveDB(db); renderRecipeItems();
+async function removeRecipeItem(id){
+  try{await sb.del('recipes',`id=eq.${id}`);C.recipes=C.recipes.filter(r=>r.id!==id);renderRecipeItems();}catch(e){toast('❌ '+e.message,'tr');}
 }
 
 function saveRecipe(){ toast('✅ تم حفظ الوصفة','tg'); }
@@ -1567,97 +1568,91 @@ function initReports(){
   renderReports(); renderMonthly();
 }
 
-function renderReports(){
-  const db=getDB();
+async function renderReports(){
   const from=document.getElementById('rep-from').value;
   const to=document.getElementById('rep-to').value;
-  const sals=db.sales.filter(s=>s.date>=from&&s.date<=to);
-  const purs=db.purchases.filter(p=>p.date>=from&&p.date<=to);
-  const exps=db.expenses.filter(e=>e.date>=from&&e.date<=to);
-  const rev=sals.reduce((a,s)=>a+s.total,0);
-  const cos=purs.reduce((a,p)=>a+p.total,0);
-  const exp=exps.reduce((a,e)=>a+e.amount,0);
-  const gp=rev-cos; const np=gp-exp;
-
-  document.getElementById('rep-kpis').innerHTML=
-    kpi('💰','الإيرادات',EGP(rev),'إجمالي المبيعات','gold')+
-    kpi('🛒','التكاليف',EGP(cos),'المشتريات','')+
-    kpi('💸','المصروفات',EGP(exp),'تشغيلية','')+
-    kpi('📊','إجمالي الربح',EGP(gp),(rev>0?(gp/rev*100).toFixed(1):0)+'%','blue')+
-    kpi('🏆','صافي الربح',EGP(np),(rev>0?(np/rev*100).toFixed(1):0)+'%',np>=0?'green':'red');
-
-  document.getElementById('rep-pnl').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:6px">
-      ${[['الإيرادات الإجمالية',EGP(rev),'var(--green)',false],
-         ['(-) تكلفة المشتريات',EGP(cos),'var(--red)',false],
-         ['إجمالي الربح',EGP(gp)+(rev>0?' ('+( gp/rev*100).toFixed(1)+'%)':''),'var(--gold)',true],
+  if(!from||!to) return;
+  showOvl('تحميل التقارير...');
+  try{
+    const [sals,purs,exps]=await Promise.all([
+      sb.get('sales',`select=total,product,category,qty,discount_amount&sale_date=gte.${from}&sale_date=lte.${to}`),
+      sb.get('purchases',`select=total&purchase_date=gte.${from}&purchase_date=lte.${to}`),
+      sb.get('expenses',`select=amount,category&expense_date=gte.${from}&expense_date=lte.${to}`)
+    ]);
+    hideOvl();
+    const rev=sals.reduce((a,s)=>a+s.total,0);
+    const cos=purs.reduce((a,p)=>a+p.total,0);
+    const exp=exps.reduce((a,e)=>a+e.amount,0);
+    const gp=rev-cos; const np=gp-exp;
+    document.getElementById('rep-kpis').innerHTML=
+      kpi('💰','الإيرادات',EGP(rev),'إجمالي المبيعات','gold')+
+      kpi('🛒','التكاليف',EGP(cos),'المشتريات','')+
+      kpi('💸','المصروفات',EGP(exp),'تشغيلية','')+
+      kpi('📊','إجمالي الربح',EGP(gp),(rev>0?(gp/rev*100).toFixed(1):0)+'%','blue')+
+      kpi('🏆','صافي الربح',EGP(np),(rev>0?(np/rev*100).toFixed(1):0)+'%',np>=0?'green':'red');
+    document.getElementById('rep-pnl').innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">
+      ${[['الإيرادات الإجمالية',EGP(rev),'var(--green)',false],['(-) تكلفة المشتريات',EGP(cos),'var(--red)',false],
+         ['إجمالي الربح',EGP(gp)+(rev>0?' ('+(gp/rev*100).toFixed(1)+'%)':''),'#1B2E4B',true],
          ['(-) المصروفات',EGP(exp),'var(--red)',false],
-         ['صافي الربح',EGP(np)+(rev>0?' ('+( np/rev*100).toFixed(1)+'%)':''),np>=0?'var(--green)':'var(--red)',true],
+         ['صافي الربح',EGP(np)+(rev>0?' ('+(np/rev*100).toFixed(1)+'%)':''),np>=0?'var(--green)':'var(--red)',true]
         ].map(([l,v,c,b])=>`
-        <div style="display:flex;justify-content:space-between;padding:${b?'12px 8px':'9px 8px'};border-bottom:1px solid var(--border);${b?'background:var(--navy);border-radius:6px;':''}">
-          <span style="font-size:13px;font-weight:${b?700:400};color:var(--text${b?'':2})">${l}</span>
+        <div style="display:flex;justify-content:space-between;padding:${b?'10px 8px':'8px 8px'};border-bottom:1px solid var(--border);${b?'background:#F8FAFC;border-radius:6px':''}">
+          <span style="font-size:13px;font-weight:${b?700:400};color:${b?'#1A202C':'var(--text2)'}">${l}</span>
           <span style="font-size:13px;font-weight:700;color:${c}">${v}</span>
-        </div>`).join('')}
-    </div>`;
-
-  // Top products chart
-  const pt={};
-  sals.forEach(s=>{pt[s.product]=(pt[s.product]||0)+s.total;});
-  const tops=Object.entries(pt).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  killChart('rep-chart');
-  if(tops.length) CH['rep-chart']=new Chart(document.getElementById('rep-chart'),{
-    type:'bar', indexAxis:'y',
-    data:{labels:tops.map(x=>x[0]),datasets:[{data:tops.map(x=>x[1]),
-      backgroundColor:['rgba(201,168,76,.8)','rgba(201,168,76,.65)','rgba(201,168,76,.5)','rgba(201,168,76,.4)','rgba(201,168,76,.3)','rgba(201,168,76,.2)'],
-      borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{...axX,ticks:{...axX.ticks,callback:v=>v+' ج'}},y:{...axY,grid:{display:false}}}}
-  });
-
-  // Daily chart
-  const days=[]; let cur=new Date(from);
-  while(cur.toISOString().split('T')[0]<=to){ days.push(cur.toISOString().split('T')[0]); const n=new Date(cur); n.setDate(n.getDate()+1); cur=n; }
-  const daily=days.map(d=>sals.filter(s=>s.date===d).reduce((a,s)=>a+s.total,0));
-  killChart('rep-daily');
-  CH['rep-daily']=new Chart(document.getElementById('rep-daily'),{
-    type:'line',
-    data:{labels:days.map(d=>d.slice(5)),datasets:[{data:daily,borderColor:'#C9A84C',backgroundColor:'rgba(201,168,76,.08)',fill:true,tension:.35,pointRadius:3,borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{...axX},y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}
-  });
-
-  // Expenses pie
-  const ec={};
-  exps.forEach(e=>{ec[e.category]=(ec[e.category]||0)+e.amount;});
-  const eck=Object.keys(ec); const ecv=eck.map(k=>ec[k]);
-  killChart('rep-exp-chart');
-  if(eck.length) CH['rep-exp-chart']=new Chart(document.getElementById('rep-exp-chart'),{
-    type:'doughnut',
-    data:{labels:eck,datasets:[{data:ecv,backgroundColor:['#C9A84C','#1A7A56','#2980B9','#C0392B','#8E44AD','#E67E22','#1ABC9C','#95A5A6'],borderWidth:0,hoverOffset:5}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#8BAABF',font:{size:10},padding:8}}}}
-  });
+        </div>`).join('')}</div>`;
+    const pt={};
+    sals.forEach(s=>{pt[s.product]=(pt[s.product]||0)+s.total;});
+    const tops=Object.entries(pt).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    killChart('rep-chart');
+    if(tops.length) CH['rep-chart']=new Chart(document.getElementById('rep-chart'),{type:'bar',indexAxis:'y',
+      data:{labels:tops.map(x=>x[0]),datasets:[{data:tops.map(x=>x[1]),backgroundColor:'rgba(27,46,75,.7)',borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{...axX,ticks:{...axX.ticks,callback:v=>v+' ج'}},y:{...axY,grid:{display:false}}}}});
+    const days=[]; let cur=new Date(from);
+    while(cur.toISOString().split('T')[0]<=to){days.push(cur.toISOString().split('T')[0]);const n=new Date(cur);n.setDate(n.getDate()+1);cur=n;}
+    const daily=days.map(d=>sals.filter(s=>s.sale_date===d).reduce((a,s)=>a+s.total,0));
+    killChart('rep-daily');
+    CH['rep-daily']=new Chart(document.getElementById('rep-daily'),{type:'line',
+      data:{labels:days.map(d=>d.slice(5)),datasets:[{data:daily,borderColor:'#1B2E4B',backgroundColor:'rgba(27,46,75,.08)',fill:true,tension:.3,pointRadius:3,borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:axX,y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}});
+    const ec={};
+    exps.forEach(e=>{ec[e.category]=(ec[e.category]||0)+e.amount;});
+    const eck=Object.keys(ec),ecv=eck.map(k=>ec[k]);
+    killChart('rep-exp-chart');
+    if(eck.length) CH['rep-exp-chart']=new Chart(document.getElementById('rep-exp-chart'),{type:'doughnut',
+      data:{labels:eck,datasets:[{data:ecv,backgroundColor:['#1B2E4B','#B8860B','#1A7A56','#C0392B','#8E44AD','#E67E22','#1ABC9C','#95A5A6'],borderWidth:0,hoverOffset:5}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#718096',font:{size:10},padding:8}}}}});
+  }catch(e){hideOvl();console.error('Reports:',e);}
 }
 
-function renderMonthly(){
-  const db=getDB(); const yr=+document.getElementById('rep-year').value;
-  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  document.getElementById('rep-monthly').innerHTML=months.map((m,i)=>{
-    const mn=String(i+1).padStart(2,'0');
-    const pfx=`${yr}-${mn}`;
-    const rev=db.sales.filter(s=>s.date.startsWith(pfx)).reduce((a,s)=>a+s.total,0);
-    const cos=db.purchases.filter(p=>p.date.startsWith(pfx)).reduce((a,p)=>a+p.total,0);
-    const exp=db.expenses.filter(e=>e.date.startsWith(pfx)).reduce((a,e)=>a+e.amount,0);
-    const gp=rev-cos; const np=gp-exp;
-    return `<tr>
-      <td><strong>${m}</strong></td>
-      <td style="color:var(--gold)">${rev>0?EGP(rev):'—'}</td>
-      <td style="color:var(--red)">${cos>0?EGP(cos):'—'}</td>
-      <td style="color:var(--red)">${exp>0?EGP(exp):'—'}</td>
-      <td>${gp>0?`<span style="color:var(--blue)">${EGP(gp)}</span>`:'—'}</td>
-      <td>${rev>0?`<span style="color:${np>=0?'var(--green)':'var(--red)'};font-weight:700">${EGP(np)}</span>`:'—'}</td>
-      <td>${rev>0?`${(np/rev*100).toFixed(1)}%`:'—'}</td>
-    </tr>`;
-  }).join('');
+async function renderMonthly(){
+  const yr=+document.getElementById('rep-year').value;
+  showOvl('تحميل التقرير الشهري...');
+  try{
+    const [sals,purs,exps]=await Promise.all([
+      sb.get('sales',`select=sale_date,total&sale_date=gte.${yr}-01-01&sale_date=lte.${yr}-12-31`),
+      sb.get('purchases',`select=purchase_date,total&purchase_date=gte.${yr}-01-01&purchase_date=lte.${yr}-12-31`),
+      sb.get('expenses',`select=expense_date,amount&expense_date=gte.${yr}-01-01&expense_date=lte.${yr}-12-31`)
+    ]);
+    hideOvl();
+    const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    document.getElementById('rep-monthly').innerHTML=months.map((m,i)=>{
+      const mn=String(i+1).padStart(2,'0'),pfx=`${yr}-${mn}`;
+      const rev=sals.filter(s=>s.sale_date.startsWith(pfx)).reduce((a,s)=>a+s.total,0);
+      const cos=purs.filter(p=>p.purchase_date.startsWith(pfx)).reduce((a,p)=>a+p.total,0);
+      const exp=exps.filter(e=>e.expense_date.startsWith(pfx)).reduce((a,e)=>a+e.amount,0);
+      const gp=rev-cos,np=gp-exp;
+      return `<tr><td><strong>${m}</strong></td>
+        <td style="color:var(--gold)">${rev>0?EGP(rev):'—'}</td>
+        <td style="color:var(--red)">${cos>0?EGP(cos):'—'}</td>
+        <td style="color:var(--red)">${exp>0?EGP(exp):'—'}</td>
+        <td>${gp>0?`<span style="color:var(--blue);font-weight:700">${EGP(gp)}</span>`:'—'}</td>
+        <td>${rev>0?`<span style="color:${np>=0?'var(--green)':'var(--red)'};font-weight:700">${EGP(np)}</span>`:'—'}</td>
+        <td>${rev>0?np>=0?(np/rev*100).toFixed(1)+'%':'خسارة':'—'}</td>
+      </tr>`;
+    }).join('');
+  }catch(e){hideOvl();console.error('Monthly:',e);}
 }
 
 
@@ -1740,7 +1735,7 @@ function changePassword(){
 // ══════════════════════════════════════════════════════
 async function loadSettingsPage(){
   try{
-    const rows=await sb.get('settings','');
+    const rows=await sb.get('settings','select=*');
     const s={}; rows.forEach(r=>s[r.key]=r.value);
     if(document.getElementById('set-name')){
       document.getElementById('set-name').value=s.restaurant_name||'GUSTU';
@@ -1782,7 +1777,7 @@ async function saveRestaurantSettings(){
 // DATABASE EXPORT / IMPORT / BRANCH
 // ══════════════════════════════════════════════════════
 function exportDB(){
-  const db = getDB();
+  const db = getDB()||{};
   const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1820,7 +1815,7 @@ function importDB(input){
 
 function copyForBranch(){
   if(!confirm('سيتم إنشاء نسخة جديدة تحتوي على الأصناف والأسعار والخامات فقط — بدون أي مبيعات أو مشتريات أو مصروفات.\n\nهل تريد المتابعة؟')) return;
-  const db = getDB();
+  const db = getDB()||SEED_DATA;
   const newDB = {
     ...db,
     sales: [],
@@ -1861,17 +1856,14 @@ function newBrand(){
 // ══════════════════════════════════════════════════════
 // RESET / CLEAR DATA
 // ══════════════════════════════════════════════════════
-const RESET_NAMES = {
-  sales:'المبيعات', purchases:'المشتريات',
-  expenses:'المصروفات', invoices:'الفواتير المفتوحة'
-};
 
-const RESET_NAMES={sales:'المبيعات',purchases:'المشتريات',expenses:'المصروفات',invoices:'الفواتير المفتوحة'};
+
 async function resetSection(section){
-  const name=RESET_NAMES[section]||section;
+  const _rn={sales:'المبيعات',purchases:'المشتريات',expenses:'المصروفات',invoices:'الفواتير'};
+  const name=_rn[section]||section;
   if(!confirm(`⚠️ تصفير ${name}؟\nلا يمكن التراجع.`)) return;
   showOvl('تصفير...');
-  try{await sb.del(section,'id=gt.0');hideOvl();toast(`✅ تم تصفير ${name}`,'tb');renderDashboard();}
+  try{await sb.del(section,'id=gte.1');hideOvl();toast(`✅ تم تصفير ${name}`,'tb');renderDashboard();}
   catch(e){hideOvl();toast('❌ '+e.message,'tr');}
 }
 async function resetAll(){
@@ -1880,7 +1872,7 @@ async function resetAll(){
   if(code!=='RESET'){toast('تم الإلغاء','tb');return;}
   showOvl('تصفير كامل...');
   try{
-    await Promise.all([sb.del('sales','id=gt.0'),sb.del('purchases','id=gt.0'),sb.del('expenses','id=gt.0'),sb.del('invoices','id=gt.0')]);
+    await Promise.all([sb.del('sales','id=gte.1'),sb.del('purchases','id=gte.1'),sb.del('expenses','id=gte.1'),sb.del('invoices','id=gte.1')]);
     hideOvl(); toast('✅ تم التصفير الكامل','tg',5000); renderDashboard();
   }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
 }
@@ -1895,93 +1887,46 @@ function initAnalytics(){
   renderAnalytics();
 }
 
-function renderAnalytics(){
-  const db=getDB();
+async function renderAnalytics(){
   const from=document.getElementById('an-from').value;
   const to=document.getElementById('an-to').value;
-  const sals=db.sales.filter(s=>s.date>=from&&s.date<=to);
-
-  // KPIs
-  const rev=sals.reduce((a,s)=>a+s.total,0);
-  const qty=sals.reduce((a,s)=>a+s.qty,0);
-  const uniq_prods=new Set(sals.map(s=>s.product)).size;
-  const avg_ticket=sals.length?rev/sals.length:0;
-
-  // Detect discounts from notes
-  const disc_total=sals.reduce((a,s)=>{
-    const m=(s.notes||'').match(/خصم ([\d.]+)%/);
-    const mf=(s.notes||'').match(/خصم ([\d.]+) ج/);
-    if(m) return a+s.total*(+m[1]/100);
-    if(mf) return a+Math.min(s.total,+mf[1]);
-    return a;
-  },0);
-
-  document.getElementById('an-kpis').innerHTML=
-    kpi('💰','إجمالي الإيرادات',EGP(rev),sals.length+' فاتورة','gold')+
-    kpi('🛒','إجمالي الكميات',qty.toFixed(0),'قطعة مباعة','blue')+
-    kpi('🏷️','متوسط الفاتورة',EGP(avg_ticket),uniq_prods+' صنف مختلف','')+
-    kpi('💸','إجمالي الخصومات',EGP(disc_total),rev>0?(disc_total/rev*100).toFixed(1)+'% من الإيرادات':'0%','red');
-
-  // By category chart
-  const cats={};
-  sals.forEach(s=>{ cats[s.category]=(cats[s.category]||0)+s.total; });
-  const catK=Object.keys(cats).filter(Boolean);
-  killChart('an-cat-chart');
-  if(catK.length){
-    CH['an-cat-chart']=new Chart(document.getElementById('an-cat-chart'),{
-      type:'doughnut',
-      data:{labels:catK,datasets:[{data:catK.map(k=>cats[k]),
-        backgroundColor:['#1B2E4B','#C9A84C','#1A7A56','#C0392B','#2980B9'],borderWidth:0,hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
-        plugins:{legend:{position:'bottom',labels:{color:'#718096',font:{size:11},padding:10}}}}
-    });
-  }
-
-  // By day of week chart
-  const days_ar=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const day_totals=Array(7).fill(0);
-  sals.forEach(s=>{ const d=new Date(s.date).getDay(); day_totals[d]+=s.total; });
-  killChart('an-day-chart');
-  CH['an-day-chart']=new Chart(document.getElementById('an-day-chart'),{
-    type:'bar',
-    data:{labels:days_ar,datasets:[{data:day_totals,
-      backgroundColor:day_totals.map(v=>v===Math.max(...day_totals)?'#1B2E4B':'rgba(27,46,75,.3)'),borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{...axX},y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}
-  });
-
-  // Products detail table
-  const prod_map={};
-  sals.forEach(s=>{
-    if(!prod_map[s.product]) prod_map[s.product]={name:s.product,cat:s.category,qty:0,total:0,disc:0,count:0};
-    prod_map[s.product].qty+=s.qty;
-    prod_map[s.product].total+=s.total;
-    prod_map[s.product].count++;
-    // detect discount
-    const m=(s.notes||'').match(/خصم ([\d.]+)%/);
-    const mf=(s.notes||'').match(/خصم ([\d.]+) ج/);
-    if(m) prod_map[s.product].disc+=s.total*(+m[1]/100);
-    else if(mf) prod_map[s.product].disc+=Math.min(s.total,+mf[1]);
-  });
-  const prods_sorted=Object.values(prod_map).sort((a,b)=>b.total-a.total);
-  document.getElementById('an-tbl').innerHTML=prods_sorted.length
-    ? prods_sorted.map((p,i)=>`<tr>
-        <td style="color:var(--text2)">${i+1}</td>
-        <td><strong>${p.name}</strong></td>
-        <td><span class="badge badge-gold">${p.cat||'—'}</span></td>
-        <td style="font-weight:700">${p.qty.toFixed(1)}</td>
-        <td style="color:var(--text2)">${p.qty>0?EGP(p.total/p.qty):EGP(0)}</td>
-        <td style="color:#1B2E4B;font-weight:700">${EGP(p.total)}</td>
-        <td style="color:var(--red)">${p.disc>0?'- '+EGP(p.disc):'—'}</td>
-        <td><div style="display:flex;align-items:center;gap:6px">
-          <div style="width:60px;height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden">
-            <div style="height:100%;background:#1B2E4B;width:${rev>0?(p.total/rev*100).toFixed(1):0}%"></div>
-          </div>
-          <span style="font-size:11px">${rev>0?(p.total/rev*100).toFixed(1):0}%</span>
-        </div></td>
-      </tr>`)
-      .join('')
-    : '<tr><td colspan="8" class="tbl-empty">لا توجد مبيعات في هذه الفترة</td></tr>';
+  showOvl('تحليل البيانات...');
+  try{
+    const sals=await sb.get('sales',`select=*&sale_date=gte.${from}&sale_date=lte.${to}`);
+    hideOvl();
+    const rev=sals.reduce((a,s)=>a+s.total,0);
+    const qty=sals.reduce((a,s)=>a+s.qty,0);
+    const disc=sals.reduce((a,s)=>a+(s.discount_amount||0),0);
+    document.getElementById('an-kpis').innerHTML=
+      kpi('💰','الإيرادات',EGP(rev),sals.length+' فاتورة','gold')+
+      kpi('🛒','الكميات',qty.toFixed(0),'قطعة','blue')+
+      kpi('📊','متوسط الفاتورة',EGP(sals.length?rev/sals.length:0),'','')+
+      kpi('💸','إجمالي الخصومات',EGP(disc),rev>0?(disc/rev*100).toFixed(1)+'%':'0%','red');
+    const cats={},days_ar=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],day_t=Array(7).fill(0);
+    sals.forEach(s=>{cats[s.category]=(cats[s.category]||0)+s.total;const d=new Date(s.sale_date).getDay();day_t[d]+=s.total;});
+    const ck=Object.keys(cats).filter(Boolean);
+    killChart('an-cat-chart'); killChart('an-day-chart');
+    if(ck.length) CH['an-cat-chart']=new Chart(document.getElementById('an-cat-chart'),{type:'doughnut',
+      data:{labels:ck,datasets:[{data:ck.map(k=>cats[k]),backgroundColor:['#1B2E4B','#B8860B','#1A7A56','#C0392B'],borderWidth:0,hoverOffset:5}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#718096',font:{size:11},padding:8}}}}});
+    CH['an-day-chart']=new Chart(document.getElementById('an-day-chart'),{type:'bar',
+      data:{labels:days_ar,datasets:[{data:day_t,backgroundColor:day_t.map(v=>v===Math.max(...day_t)?'#1B2E4B':'rgba(27,46,75,.3)'),borderRadius:5}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:axX,y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}});
+    const pm={};
+    sals.forEach(s=>{if(!pm[s.product])pm[s.product]={name:s.product,cat:s.category,qty:0,total:0,disc:0};
+      pm[s.product].qty+=s.qty;pm[s.product].total+=s.total;pm[s.product].disc+=(s.discount_amount||0);});
+    const ps=Object.values(pm).sort((a,b)=>b.total-a.total);
+    document.getElementById('an-tbl').innerHTML=ps.length
+      ? ps.map((p,i)=>`<tr><td style="color:var(--text2)">${i+1}</td><td><strong>${p.name}</strong></td>
+          <td><span class="badge badge-gold">${p.cat||''}</span></td><td style="font-weight:700">${p.qty.toFixed(1)}</td>
+          <td style="color:var(--text2)">${p.qty>0?EGP(p.total/p.qty):EGP(0)}</td>
+          <td style="color:#1B2E4B;font-weight:700">${EGP(p.total)}</td>
+          <td><div style="display:flex;align-items:center;gap:5px">
+            <div style="width:55px;height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden"><div style="height:100%;background:#1B2E4B;width:${rev>0?(p.total/rev*100).toFixed(1):0}%"></div></div>
+            <span style="font-size:11px">${rev>0?(p.total/rev*100).toFixed(1):0}%</span></div></td>
+        </tr>`).join('')
+      : '<tr><td colspan="7" class="tbl-empty">لا توجد مبيعات</td></tr>';
+  }catch(e){hideOvl();console.error('Analytics:',e);}
 }
 
 // ══════════════════════════════════════════════════════
@@ -1993,8 +1938,6 @@ function previewInvoice(){
   const discAmt=getDiscount(subtotal);
   const total=subtotal-discAmt;
   const invNum='INV-'+today().replace(/-/g,'')+'-'+String(nowId()).slice(-4);
-  const db=getDB();
-
   const rows=cart.map(c=>`
     <tr>
       <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${c.name}</td>
@@ -2076,7 +2019,7 @@ async function saveOpenInvoice(){
 
 async function renderOpenInvoices(){
   try{
-    const open=await sb.get('invoices','status=eq.open&order=created_at.desc');
+    const open=await sb.get('invoices','select=*&status=eq.open&order=created_at.desc');
     const wrap=document.getElementById('openInvoicesWrap');
     const list=document.getElementById('openInvoicesList');
     if(!wrap||!list) return;
@@ -2093,27 +2036,7 @@ async function renderOpenInvoices(){
   }catch(e){}
 }
 
-function loadInvoice(id){
-  const db=getDB();
-  const inv=(db.invoices||[]).find(i=>i.id===id);
-  if(!inv) return;
-  cart=JSON.parse(JSON.stringify(inv.items));
-  discType=inv.discType||'pct';
-  document.getElementById('discValue').value=inv.discValue||0;
-  document.getElementById('posNotes').value=inv.notes||'';
-  setDiscType(discType);
-  renderCart();
-  filterProducts();
-  // Mark as loaded (keep open so user can continue editing)
-  toast('📂 تم فتح الفاتورة — يمكنك إضافة أصناف جديدة','tb');
-}
 
-function deleteInvoice(id){
-  const db=getDB();
-  db.invoices=(db.invoices||[]).filter(i=>i.id!==id);
-  saveDB(db); renderOpenInvoices();
-  toast('🗑 تم حذف الفاتورة','tb');
-}
 
 // Override confirmSale to also remove from open invoices
 const _origConfirmSale = window.confirmSale;
@@ -2126,9 +2049,9 @@ async function exportExcel(){
   try{
     const yr=new Date().getFullYear();
     const [sals,purs,exps]=await Promise.all([
-      sb.get('sales','order=sale_date.desc'),
-      sb.get('purchases','order=purchase_date.desc'),
-      sb.get('expenses','order=expense_date.desc')
+      sb.get('sales','order=sale_date.desc,id.desc'),
+      sb.get('purchases','order=purchase_date.desc,id.desc'),
+      sb.get('expenses','order=expense_date.desc,id.desc')
     ]);
     hideOvl();
     const wb=XLSX.utils.book_new();
