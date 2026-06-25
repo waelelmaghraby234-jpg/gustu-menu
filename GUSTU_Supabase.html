@@ -1,0 +1,2176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GUSTU — نظام إدارة المطعم</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --navy:#1B2E4B; --navy2:#253F68; --navy3:#2E4D7A;
+  --gold:#B8860B; --gold-l:#FFF8E7; --gold-d:#8B6508;
+  --green:#1A7A56; --green-l:#D5F5E3;
+  --red:#C0392B; --red-l:#FADBD8;
+  --blue:#2980B9; --blue-l:#D6EAF8;
+  --bg:#F5F6FA; --card:#FFFFFF; --card2:#F0F2F8;
+  --border:#E2E8F0; --border2:#B8860B33;
+  --text:#1A202C; --text2:#718096; --white:#fff;
+  --r:12px; --r2:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+
+/* ── Login ── */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,#0D1B2E 0%,#1B2E4B 100%);
+  display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
+.login-box{background:#fff;border-radius:16px;padding:2.5rem 2rem;width:90%;max-width:360px;
+  text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.4)}
+.login-logo{font-family:'Playfair Display',serif;font-style:italic;font-size:42px;
+  color:#1B2E4B;margin-bottom:4px}
+.login-sub{font-size:13px;color:#718096;margin-bottom:28px;letter-spacing:.05em}
+.login-field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;text-align:right}
+.login-field label{font-size:11px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.05em}
+.login-field input{padding:11px 14px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;
+  font-family:'Cairo',sans-serif;color:#1A202C;direction:rtl;width:100%}
+.login-field input:focus{outline:none;border-color:#1B2E4B}
+.login-btn{width:100%;padding:12px;background:#1B2E4B;color:#C9A84C;border:none;border-radius:8px;
+  font-size:15px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;margin-top:4px;
+  letter-spacing:.03em;transition:background .15s}
+.login-btn:hover{background:#253F68}
+.login-err{color:#C0392B;font-size:12px;margin-top:10px;min-height:18px}
+.login-version{font-size:11px;color:rgba(255,255,255,.3);margin-top:20px}
+
+/* ── Sidebar ── */
+.sidebar{position:fixed;right:0;top:0;bottom:0;width:220px;background:#1B2E4B;border-left:1px solid rgba(184,134,11,.3);z-index:100;display:flex;flex-direction:column}
+.logo{padding:20px 16px;border-bottom:1px solid var(--border2);text-align:center}
+.logo h1{font-family:'Playfair Display',serif;font-style:italic;font-size:24px;color:var(--gold);line-height:1}
+.logo p{font-size:11px;color:var(--text2);margin-top:3px;letter-spacing:.06em}
+.nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:600;transition:all .15s;border-right:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#F6C90E}
+.nav-item.on{background:rgba(255,255,255,.12);color:#F6C90E;border-right-color:#F6C90E}
+.nav-icon{font-size:17px;width:20px;text-align:center}
+.nav-ver{padding:12px 16px;font-size:10px;color:rgba(255,255,255,.35);border-top:1px solid rgba(255,255,255,.1)}
+
+/* ── Main ── */
+.main{margin-right:220px;min-height:100vh}
+.topbar{background:#FFFFFF;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.topbar h2{font-size:15px;font-weight:700;color:#1B2E4B}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.date-chip{background:#F0F4FF;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--text2)}
+.content{padding:1.25rem 1.5rem}
+
+/* ── Pages ── */
+.page{display:none}.page.on{display:block}
+
+/* ── KPI Cards ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.25rem}
+.kpi{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:1rem 1.25rem}
+.kpi .lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.kpi .val{font-size:22px;font-weight:800;line-height:1.1;color:#1A202C}
+.kpi .sub{font-size:11px;color:var(--text2);margin-top:4px}
+.kpi.gold .val{color:var(--gold)}
+.kpi.green .val{color:var(--green)}
+.kpi.red .val{color:var(--red)}
+.kpi.blue .val{color:var(--blue)}
+
+/* ── Panels ── */
+.panel{background:var(--card);border-radius:var(--r);border:1px solid var(--border);margin-bottom:1.25rem;overflow:hidden}
+.panel-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#FAFBFF}
+.panel-hdr h3{font-size:13px;font-weight:700;color:var(--gold)}
+.panel-body{padding:1.25rem}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+@media(max-width:900px){.two-col,.three-col{grid-template-columns:1fr}}
+
+/* ── Forms ── */
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{font-family:'Cairo',sans-serif;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r2);background:#FFFFFF;color:var(--text);width:100%;direction:rtl;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+select option{background:#fff}
+textarea{resize:vertical;min-height:60px}
+
+/* ── Buttons ── */
+.btn{font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;padding:9px 18px;border-radius:var(--r2);border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn-gold{background:var(--gold);color:var(--navy)}
+.btn-gold:hover{background:var(--gold-d)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{opacity:.85}
+.btn-red{background:var(--red-l);color:var(--red);border:1px solid var(--red)}
+.btn-red:hover{background:var(--red);color:#fff}
+.btn-outline{background:#fff;color:#1B2E4B;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.btn-outline:hover{border-color:#1B2E4B;color:#1B2E4B;background:#F0F4FF}
+.btn-sm{font-size:11px;padding:5px 10px}
+
+/* ── Tables ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:right;padding:10px 12px;font-size:10px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);background:#F8FAFC;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#F0F7FF}
+.tbl-empty{text-align:center;color:var(--text2);padding:30px;font-size:13px}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+.badge-gold{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid var(--border2)}
+.badge-green{background:rgba(26,122,86,.2);color:#2ECC71}
+.badge-red{background:rgba(192,57,43,.2);color:#E74C3C}
+.badge-blue{background:rgba(41,128,185,.2);color:#3498DB}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:30px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;font-family:'Cairo',sans-serif}
+.toast.show{opacity:1}
+.tg{background:var(--green);color:#fff}
+.tr{background:var(--red);color:#fff}
+.tb{background:var(--navy3);color:var(--gold);border:1px solid var(--border2)}
+
+/* ── Alert ── */
+.alert{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r2);font-size:13px;margin-bottom:10px}
+.alert-warn{background:#FFFBEB;border:1px solid #FCD34D;color:#92400E}
+.alert-ok{background:#F0FFF4;border:1px solid #86EFAC;color:#166534}
+
+/* ── Chart ── */
+.chart-wrap{position:relative;width:100%}
+
+/* ── Quick sale ── */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.prod-btn{background:#F8FAFC;border:1px solid var(--border);border-radius:var(--r2);padding:12px 10px;text-align:center;cursor:pointer;transition:all .15s}
+.prod-btn:hover{border-color:#1B2E4B;background:#EFF6FF}
+.prod-btn.selected{border-color:#1B2E4B;background:#DBEAFE}
+.prod-btn .pname{font-size:12px;font-weight:700;color:#1A202C;line-height:1.3;margin-bottom:5px}
+.prod-btn .pcat{font-size:10px;color:var(--text2)}
+.prod-btn .pprice{font-size:14px;font-weight:800;color:var(--gold)}
+
+/* ── Cart ── */
+.cart-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.cart-item:last-child{border-bottom:none}
+.cart-name{flex:1;font-size:12px;font-weight:600}
+.cart-qty{display:flex;align-items:center;gap:6px}
+.qty-btn{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:#F0F4FF;color:#1A202C;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{border-color:#1B2E4B;color:#1B2E4B;background:#DBEAFE}
+.cart-total{font-size:13px;font-weight:700;color:var(--gold);min-width:60px;text-align:left}
+.disc-row{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.disc-type{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;font-family:'Cairo',sans-serif;cursor:pointer;color:var(--text);width:auto}
+.disc-type.on{background:#1B2E4B;color:#fff;border-color:#1B2E4B}
+
+/* ── Category filter ── */
+.cat-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cat-chip{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Cairo',sans-serif;transition:all .15s}
+.cat-chip.on{background:#1B2E4B;color:#fff;border-color:#1B2E4B}
+
+/* ── Search ── */
+.search-input{background:#fff;border:1px solid var(--border);border-radius:20px;padding:8px 16px;font-size:13px;width:100%;color:var(--text);direction:rtl;font-family:'Cairo',sans-serif;margin-bottom:12px}
+.search-input:focus{outline:none;border-color:var(--gold)}
+
+/* ── Stock alert ── */
+.stock-low{color:var(--red)!important;font-weight:700}
+.stock-bar{height:5px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:3px;width:80px}
+.stock-fill{height:100%;border-radius:3px}
+
+/* ── Month tabs ── */
+.month-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.mtab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--navy2);color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif}
+.mtab.on{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+
+/* overlay */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center}
+.ovl.show{display:flex}
+.spin{width:40px;height:40px;border:3px solid #E2E8F0;border-top-color:#1B2E4B;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Print */
+@media print{
+  .sidebar,.topbar,.btn,.cat-filter,.search-input,.form-row,.panel:has(form),.panel:has(.form-row),
+  #page-pos .panel:first-child,.nav-item,button,.tbl-wrap button{display:none!important}
+  .main{margin-right:0!important}
+  body{background:#fff!important;color:#000!important}
+  .panel{border:1px solid #ddd!important;box-shadow:none!important;break-inside:avoid}
+  .kpi{border:1px solid #ddd!important}
+  table th{background:#f5f5f5!important;color:#000!important}
+  .badge{border:1px solid #ddd!important;color:#000!important;background:#f5f5f5!important}
+  @page{margin:1.5cm;size:A4}
+}
+/* Divider */
+.divider{height:1px;background:#E2E8F0;margin:12px 0}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Gustu</div>
+    <div class="login-sub">Pizza & Turkish Pies — Management System</div>
+    <div class="login-field">
+      <label>اسم المستخدم</label>
+      <input type="text" id="loginUser" placeholder="username" autocomplete="username"
+             onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+    </div>
+    <div class="login-field">
+      <label>كلمة المرور</label>
+      <input type="password" id="loginPass" placeholder="password" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">🔐 دخول</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+  <div class="login-version">GUSTU POS v2.0 — Beta</div>
+</div>
+
+<nav class="sidebar">
+  <div class="logo">
+    <h1>Gustu</h1>
+    <p>Pizza & Turkish Pies</p>
+    <div id="dbInd" style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,57,43,.4);color:#ff9999;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px">🔴 Connecting...</div>
+  </div>
+  <div class="nav" id="nav">
+    <div class="nav-item on" data-page="dashboard"><span class="nav-icon">📊</span> لوحة التحكم</div>
+    <div class="nav-item" data-page="pos"><span class="nav-icon">🧾</span> نقطة البيع</div>
+    <div class="nav-item" data-page="sales"><span class="nav-icon">💰</span> المبيعات</div>
+    <div class="nav-item" data-page="purchases"><span class="nav-icon">🛒</span> المشتريات</div>
+    <div class="nav-item" data-page="expenses"><span class="nav-icon">💸</span> المصروفات</div>
+    <div class="nav-item" data-page="stock"><span class="nav-icon">📦</span> المخزن</div>
+    <div class="nav-item" data-page="recipes"><span class="nav-icon">👨‍🍳</span> الوصفات</div>
+    <div class="nav-item" data-page="products"><span class="nav-icon">🍕</span> الأصناف والأسعار</div>
+    <div class="nav-item" data-page="analytics"><span class="nav-icon">🔍</span> تحليل المبيعات</div>
+    <div class="nav-item" data-page="reports"><span class="nav-icon">📈</span> التقارير الشهرية</div>
+    <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> الإعدادات</div>
+  </div>
+  <div style="padding:6px 8px;border-top:1px solid rgba(255,255,255,.1)">
+    <div class="nav-item" onclick="doLogout()" style="color:#F87171;border-radius:8px"><span class="nav-icon">🚪</span> تسجيل الخروج</div>
+  </div>
+  <div class="nav-ver">GUSTU POS v2.0</div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <h2 id="pageTitle">لوحة التحكم</h2>
+    <div class="topbar-right" style="display:flex;align-items:center;gap:8px">
+      <span class="date-chip" id="dateBadge"></span>
+      <button class="btn btn-outline btn-sm" onclick="exportExcel()" title="تصدير Excel">
+        📊 Excel
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="printReport()" title="طباعة">
+        🖨️ طباعة
+      </button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div id="page-dashboard" class="page on">
+      <div class="kpi-grid" id="dash-kpis"></div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><h3>📈 مبيعات آخر 7 أيام</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="chartWeek"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h3>🏆 أفضل الأصناف (هذا الشهر)</h3></div>
+          <div class="panel-body"><div id="dash-top"></div></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><h3>⚠️ تنبيهات المخزن</h3></div>
+          <div class="panel-body"><div id="dash-stock"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h3>💰 ملخص الشهر الحالي</h3></div>
+          <div class="panel-body"><div id="dash-summary"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ POS ══ -->
+    <div id="page-pos" class="page">
+      <div class="two-col" style="align-items:start">
+        <div>
+          <div class="panel">
+            <div class="panel-hdr"><h3>🍕 اختر الأصناف</h3></div>
+            <div class="panel-body">
+              <input class="search-input" id="posSearch" placeholder="ابحث عن صنف..." oninput="filterProducts()">
+              <div class="cat-filter" id="posCats"></div>
+              <div class="products-grid" id="posGrid"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <div class="panel-hdr">
+              <h3>🧾 الفاتورة</h3>
+              <button class="btn btn-outline btn-sm" onclick="clearCart()">🗑 مسح</button>
+            </div>
+            <div class="panel-body">
+              <div id="cartItems" style="min-height:120px"></div>
+              <div class="divider"></div>
+
+              <div class="divider"></div>
+              <!-- Discount -->
+              <div style="margin-bottom:10px">
+                <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">الخصم</div>
+                <div style="display:flex;gap:6px;margin-bottom:8px">
+                  <button id="disc-pct-btn" class="disc-type on" onclick="setDiscType('pct')">نسبة %</button>
+                  <button id="disc-fixed-btn" class="disc-type" onclick="setDiscType('fixed')">مبلغ ثابت</button>
+                  <button class="disc-type" onclick="clearDiscount()" style="color:var(--red)">✕ إلغاء</button>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="number" id="discValue" min="0" step="0.5" value="0"
+                    style="width:90px;font-size:14px;font-weight:700;text-align:center;direction:ltr"
+                    oninput="renderCart()" placeholder="0">
+                  <span id="discLabel" style="font-size:13px;color:var(--text2)">%</span>
+                  <span id="discAmount" style="font-size:13px;font-weight:700;color:var(--red);margin-right:auto"></span>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:13px;color:var(--text2)">المجموع قبل الخصم:</span>
+                <span style="font-size:13px;color:var(--text2)" id="cartSubtotal">0 ج</span>
+              </div>
+              <div id="cartDiscRow" style="display:none;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:13px;color:var(--red)">الخصم:</span>
+                <span style="font-size:13px;font-weight:700;color:var(--red)" id="cartDiscDisplay">0 ج</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-top:8px;border-top:2px solid var(--border)">
+                <span style="font-size:16px;font-weight:700;color:var(--text)">الإجمالي:</span>
+                <span style="font-size:24px;font-weight:800;color:#1B2E4B" id="cartTotal">0 ج</span>
+              </div>
+              <div class="fg" style="margin-bottom:10px">
+                <label>ملاحظات</label>
+                <input type="text" id="posNotes" placeholder="اختياري">
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:8px">
+                <button class="btn btn-gold" style="flex:1;justify-content:center;font-size:14px;padding:11px" onclick="confirmSale()">
+                  ✅ تأكيد وحفظ
+                </button>
+                <button class="btn btn-outline" style="padding:11px 14px" onclick="saveOpenInvoice()" title="حفظ كفاتورة مفتوحة">
+                  🔖 حفظ مؤقت
+                </button>
+                <button class="btn btn-outline" style="padding:11px 10px" onclick="previewInvoice()" title="معاينة الفاتورة">
+                  👁️
+                </button>
+              </div>
+              <!-- Open Invoices -->
+              <div id="openInvoicesWrap" style="margin-top:10px;display:none">
+                <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">📋 الفواتير المفتوحة</div>
+                <div id="openInvoicesList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SALES ══ -->
+    <div id="page-sales" class="page">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-hdr"><h3>➕ إضافة مبيعة يدوية</h3></div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="fg"><label>التاريخ</label><input type="date" id="sal-date"></div>
+            <div class="fg"><label>الصنف</label><select id="sal-prod"></select></div>
+            <div class="fg"><label>الكمية</label><input type="number" id="sal-qty" value="1" min="0.5" step="0.5"></div>
+            <div class="fg"><label>سعر الوحدة (ج)</label><input type="number" id="sal-price" min="0"></div>
+            <div class="fg"><label>ملاحظات</label><input type="text" id="sal-notes" placeholder="اختياري"></div>
+            <div class="fg" style="justify-content:flex-end;padding-top:16px">
+              <button class="btn btn-gold" onclick="addSale()">💾 حفظ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>📋 سجل المبيعات</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="sal-from" style="width:140px" onchange="renderSalesTable()">
+            <span style="color:var(--text2);font-size:12px">إلى</span>
+            <input type="date" id="sal-to" style="width:140px" onchange="renderSalesTable()">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="kpi-grid" id="sal-kpis" style="margin-bottom:1rem"></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>التاريخ</th><th>الصنف</th><th>التصنيف</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th><th>ملاحظات</th><th></th></tr></thead>
+            <tbody id="sal-tbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PURCHASES ══ -->
+    <div id="page-purchases" class="page">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-hdr"><h3>➕ إضافة مشترى</h3></div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="fg"><label>التاريخ</label><input type="date" id="pur-date"></div>
+            <div class="fg"><label>الخامة</label><select id="pur-ing"></select></div>
+            <div class="fg"><label>الكمية</label><input type="number" id="pur-qty" min="0" step="0.1"></div>
+            <div class="fg"><label>تكلفة الوحدة (ج)</label><input type="number" id="pur-cost" min="0"></div>
+            <div class="fg"><label>المورد</label><input type="text" id="pur-supplier" placeholder="اسم المورد"></div>
+            <div class="fg" style="justify-content:flex-end;padding-top:16px">
+              <button class="btn btn-green" onclick="addPurchase()">💾 حفظ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>📋 سجل المشتريات</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="pur-from" style="width:140px" onchange="renderPurTable()">
+            <span style="color:var(--text2);font-size:12px">إلى</span>
+            <input type="date" id="pur-to" style="width:140px" onchange="renderPurTable()">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="kpi-grid" id="pur-kpis" style="margin-bottom:1rem"></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>التاريخ</th><th>الخامة</th><th>الكمية</th><th>الوحدة</th><th>تكلفة الوحدة</th><th>الإجمالي</th><th>المورد</th><th></th></tr></thead>
+            <tbody id="pur-tbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EXPENSES ══ -->
+    <div id="page-expenses" class="page">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-hdr"><h3>➕ إضافة مصروف</h3></div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="fg"><label>التاريخ</label><input type="date" id="exp-date"></div>
+            <div class="fg"><label>التصنيف</label><select id="exp-cat"></select></div>
+            <div class="fg"><label>البيان</label><input type="text" id="exp-desc" placeholder="وصف المصروف"></div>
+            <div class="fg"><label>المبلغ (ج)</label><input type="number" id="exp-amt" min="0"></div>
+            <div class="fg" style="justify-content:flex-end;padding-top:16px">
+              <button class="btn btn-gold" onclick="addExpense()">💾 حفظ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>📋 سجل المصروفات</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="exp-from" style="width:140px" onchange="renderExpTable()">
+            <span style="color:var(--text2);font-size:12px">إلى</span>
+            <input type="date" id="exp-to" style="width:140px" onchange="renderExpTable()">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="kpi-grid" id="exp-kpis" style="margin-bottom:1rem"></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>التاريخ</th><th>التصنيف</th><th>البيان</th><th>المبلغ</th><th></th></tr></thead>
+            <tbody id="exp-tbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STOCK ══ -->
+    <div id="page-stock" class="page">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-hdr"><h3>➕ إضافة خامة جديدة</h3></div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="fg"><label>اسم الخامة</label><input type="text" id="ing-name" placeholder="مثال: دقيق أبيض"></div>
+            <div class="fg"><label>وحدة القياس</label>
+              <select id="ing-unit"><option>كجم</option><option>لتر</option><option>علبة</option><option>قطعة</option><option>كيس</option><option>اسطوانة</option></select>
+            </div>
+            <div class="fg"><label>الكمية الحالية</label><input type="number" id="ing-qty" min="0" step="0.1" value="0"></div>
+            <div class="fg"><label>الحد الأدنى</label><input type="number" id="ing-min" min="0" step="0.1" value="0"></div>
+            <div class="fg"><label>تكلفة الوحدة (ج)</label><input type="number" id="ing-cost" min="0" step="0.5" value="0"></div>
+            <div class="fg" style="justify-content:flex-end;padding-top:16px">
+              <button class="btn btn-green" onclick="addIngredient()">➕ إضافة</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <h3>📦 حالة المخزن</h3>
+          <span id="stock-val" style="font-size:12px;color:var(--gold)"></span>
+        </div>
+        <div class="panel-body">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>الخامة</th><th>الوحدة</th><th>الكمية</th><th>الحد الأدنى</th><th>تكلفة الوحدة</th><th>قيمة المخزون</th><th>الحالة</th><th>تعديل</th></tr></thead>
+            <tbody id="stk-tbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ RECIPES ══ -->
+    <div id="page-recipes" class="page">
+      <div class="two-col" style="align-items:start">
+        <div class="panel">
+          <div class="panel-hdr"><h3>👨‍🍳 اختر صنف لعرض وصفته</h3></div>
+          <div class="panel-body">
+            <input class="search-input" id="recSearch" placeholder="ابحث..." oninput="filterRecipeList()">
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>الصنف</th><th>التصنيف</th><th>تكلفة الخامات</th><th></th></tr></thead>
+              <tbody id="rec-list"></tbody>
+            </table></div>
+          </div>
+        </div>
+        <div class="panel" id="rec-editor" style="display:none">
+          <div class="panel-hdr">
+            <h3 id="rec-title">الوصفة</h3>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('rec-editor').style.display='none'">✕</button>
+          </div>
+          <div class="panel-body">
+            <div id="rec-items"></div>
+            <div class="divider"></div>
+            <div class="form-row">
+              <div class="fg"><label>إضافة خامة</label><select id="rec-ing"></select></div>
+              <div class="fg"><label>الكمية</label><input type="number" id="rec-qty" min="0" step="0.01" value="0.1"></div>
+              <div class="fg" style="justify-content:flex-end;padding-top:16px">
+                <button class="btn btn-gold btn-sm" onclick="addRecipeItem()">➕</button>
+              </div>
+            </div>
+            <button class="btn btn-green" style="width:100%;justify-content:center" onclick="saveRecipe()">💾 حفظ الوصفة</button>
+            <div id="rec-cost" style="margin-top:10px;background:var(--navy);border-radius:var(--r2);padding:10px;font-size:13px;color:var(--text2)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PRODUCTS ══ -->
+    <div id="page-products" class="page">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-hdr"><h3>➕ إضافة صنف جديد</h3></div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="fg"><label>اسم الصنف</label><input type="text" id="prd-name" placeholder="بيتزا مارغريتا وسط"></div>
+            <div class="fg"><label>التصنيف</label>
+              <select id="prd-cat"><option>بيتزا</option><option>فطير</option><option>صاروخ</option><option>مشروبات</option></select>
+            </div>
+            <div class="fg"><label>السعر (ج)</label><input type="number" id="prd-price" min="0"></div>
+            <div class="fg" style="justify-content:flex-end;padding-top:16px">
+              <button class="btn btn-gold" onclick="addProduct()">➕ إضافة</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><h3>🍕 قائمة الأصناف والأسعار</h3></div>
+        <div class="panel-body">
+          <div class="cat-filter" id="prd-cats"></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>اسم الصنف</th><th>التصنيف</th><th>السعر (ج)</th><th>تعديل السعر</th><th></th></tr></thead>
+            <tbody id="prd-tbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══ ANALYTICS ══ -->
+    <div id="page-analytics" class="page">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-hdr">
+          <h3>🔍 تحليل المبيعات التفصيلي</h3>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="date" id="an-from" style="width:130px">
+            <span style="color:var(--text2);font-size:12px">إلى</span>
+            <input type="date" id="an-to" style="width:130px">
+            <button class="btn btn-gold btn-sm" onclick="renderAnalytics()">تحليل</button>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="an-kpis"></div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><h3>🍕 مبيعات حسب التصنيف</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="an-cat-chart"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h3>⏰ مبيعات حسب اليوم</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="an-day-chart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><h3>📋 تفاصيل كل صنف — الكميات والإيرادات والخصومات</h3></div>
+        <div class="panel-body">
+          <div class="tbl-wrap"><table>
+            <thead><tr>
+              <th>#</th><th>الصنف</th><th>التصنيف</th>
+              <th>الكمية المباعة</th><th>سعر الوحدة</th>
+              <th>إجمالي الإيرادات</th><th>الخصومات</th><th>% من الإيرادات</th>
+            </tr></thead>
+            <tbody id="an-tbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ INVOICE PREVIEW MODAL ══ -->
+    <div id="invModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:12px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <div style="background:#1B2E4B;padding:14px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between">
+          <span style="color:#C9A84C;font-size:15px;font-weight:700;font-family:'Playfair Display',serif;font-style:italic">Gustu</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-gold btn-sm" onclick="printInvoice()">🖨️ طباعة</button>
+            <button onclick="document.getElementById('invModal').style.display='none'" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer">✕</button>
+          </div>
+        </div>
+        <div id="invPreviewContent" style="padding:20px;direction:rtl;font-family:'Cairo',sans-serif"></div>
+      </div>
+    </div>
+
+    <!-- ══ REPORTS ══ -->
+    <div id="page-reports" class="page">
+      <div class="panel" style="margin-bottom:1rem">
+        <div class="panel-hdr">
+          <h3>📅 اختر الفترة</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="rep-from" style="width:140px">
+            <span style="color:var(--text2);font-size:12px">إلى</span>
+            <input type="date" id="rep-to" style="width:140px">
+            <button class="btn btn-gold btn-sm" onclick="renderReports()">عرض</button>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="rep-kpis"></div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><h3>📊 ملخص الأرباح والخسائر</h3></div>
+          <div class="panel-body"><div id="rep-pnl"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h3>🏆 أفضل الأصناف</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="rep-chart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-hdr"><h3>📈 المبيعات اليومية</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="rep-daily"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h3>💸 توزيع المصروفات</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="rep-exp-chart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><h3>📅 التقرير الشهري السنوي</h3></div>
+        <div class="panel-body">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+            <label style="font-size:12px;color:var(--text2)">السنة:</label>
+            <input type="number" id="rep-year" value="2026" style="width:90px">
+            <button class="btn btn-outline btn-sm" onclick="renderMonthly()">عرض</button>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>الشهر</th><th>المبيعات</th><th>المشتريات</th><th>المصروفات</th><th>إجمالي الربح</th><th>صافي الربح</th><th>الهامش %</th></tr></thead>
+            <tbody id="rep-monthly"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══ SETTINGS ══ -->
+    <div id="page-settings" class="page">
+      <div class="two-col">
+
+        <div class="panel">
+          <div class="panel-hdr"><h3>👤 إعدادات المستخدمين</h3></div>
+          <div class="panel-body">
+            <div style="margin-bottom:1rem">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:10px">تغيير كلمة مرور المدير</div>
+              <div class="form-row">
+                <div class="fg"><label>كلمة المرور الجديدة</label>
+                  <input type="password" id="newPwd" placeholder="أدخل كلمة المرور الجديدة">
+                </div>
+                <div class="fg"><label>تأكيد كلمة المرور</label>
+                  <input type="password" id="confirmPwd" placeholder="أعد الإدخال">
+                </div>
+              </div>
+              <button class="btn btn-gold btn-sm" onclick="changePassword()">💾 تغيير كلمة المرور</button>
+            </div>
+            <div class="divider"></div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px">المستخدمون المتاحون</div>
+            <div id="usersList"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr"><h3>🏪 بيانات المطعم</h3></div>
+          <div class="panel-body">
+            <div class="form-row">
+              <div class="fg"><label>اسم المطعم</label>
+                <input type="text" id="set-name">
+              </div>
+              <div class="fg"><label>رقم التليفون</label>
+                <input type="text" id="set-phone" style="direction:ltr">
+              </div>
+              <div class="fg"><label>العنوان</label>
+                <input type="text" id="set-addr">
+              </div>
+              <div class="fg"><label>ساعات العمل</label>
+                <input type="text" id="set-hours" placeholder="9:00 ص — 12:00 م">
+              </div>
+            </div>
+            <button class="btn btn-gold btn-sm" onclick="saveRestaurantSettings()">💾 حفظ البيانات</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DB BACKUP -->
+      <div class="panel" style="margin-bottom:1.25rem;border:1.5px solid #1B2E4B">
+        <div class="panel-hdr" style="background:#F0F4FF">
+          <h3 style="color:#1B2E4B">💾 النسخ الاحتياطي ونقل البيانات</h3>
+        </div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+            <!-- Export -->
+            <div style="background:#F8FAFC;border-radius:10px;padding:16px;border:1px solid var(--border)">
+              <div style="font-size:14px;font-weight:700;color:#1B2E4B;margin-bottom:6px">📤 تصدير قاعدة البيانات</div>
+              <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+                يحمّل ملف <code style="font-family:monospace;background:#E2E8F0;padding:1px 5px;border-radius:3px">.json</code> يحتوي على كل بياناتك — المبيعات والأصناف والمخزن وكل شيء.<br>
+                احفظه على USB أو Google Drive كنسخة احتياطية.
+              </div>
+              <button class="btn btn-gold" onclick="exportDB()" style="width:100%;justify-content:center">
+                ⬇️ تصدير الآن
+              </button>
+            </div>
+
+            <!-- Import -->
+            <div style="background:#F8FAFC;border-radius:10px;padding:16px;border:1px solid var(--border)">
+              <div style="font-size:14px;font-weight:700;color:#1B2E4B;margin-bottom:6px">📥 استيراد قاعدة البيانات</div>
+              <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+                لنقل البيانات من جهاز تاني أو استعادة نسخة احتياطية.<br>
+                ⚠️ سيستبدل البيانات الحالية بالكامل.
+              </div>
+              <label style="display:block;width:100%">
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importDB(this)">
+                <div class="btn btn-outline" style="width:100%;justify-content:center;cursor:pointer;text-align:center;padding:9px" onclick="document.getElementById('importFile').click()">
+                  ⬆️ استيراد ملف JSON
+                </div>
+              </label>
+            </div>
+
+          </div>
+
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="font-size:13px;font-weight:700;color:#1B2E4B;margin-bottom:10px">🏪 فتح براند أو فرع جديد</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-outline" onclick="copyForBranch()">
+                📋 نسخ الأصناف للفرع الجديد (بدون مبيعات)
+              </button>
+              <button class="btn btn-outline" onclick="newBrand()">
+                ✨ براند جديد من الصفر
+              </button>
+            </div>
+            <div style="font-size:11px;color:var(--text2);margin-top:8px">
+              "نسخ للفرع" = ينسخ الأصناف والأسعار والخامات فقط · "براند جديد" = يبدأ من الصفر بأصناف فارغة
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div class="panel" style="border:2px solid var(--red)">
+        <div class="panel-hdr" style="background:#FFF5F5">
+          <h3 style="color:var(--red)">⚠️ منطقة الخطر — تصفير البيانات</h3>
+        </div>
+        <div class="panel-body">
+          <div style="background:#FFF5F5;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;color:#7F1D1D;line-height:1.7">
+            ⚠️ هذه الأزرار تحذف البيانات بشكل دائم ولا يمكن التراجع.<br>
+            <strong>استخدمها فقط عند الانتهاء من مرحلة التجربة.</strong>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA"
+              onclick="resetSection('sales')">🗑️ تصفير المبيعات فقط</button>
+            <button class="btn" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA"
+              onclick="resetSection('purchases')">🗑️ تصفير المشتريات فقط</button>
+            <button class="btn" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA"
+              onclick="resetSection('expenses')">🗑️ تصفير المصروفات فقط</button>
+            <button class="btn" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA"
+              onclick="resetSection('invoices')">🗑️ تصفير الفواتير المفتوحة</button>
+          </div>
+          <div class="divider"></div>
+          <button class="btn" style="background:#991B1B;color:#fff;font-size:14px;padding:12px 24px"
+            onclick="resetAll()">
+            🔄 تصفير كامل — مبيعات + مشتريات + مصروفات (ابدأ من الصفر)
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="ovl" id="ovl"><div class="spin"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SEED_DATA = {"products": [{"id": 1, "name": "بيتزا مارغريتا وسط", "category": "بيتزا", "price": 130.0, "active": true}, {"id": 2, "name": "بيتزا مارغريتا كبير", "category": "بيتزا", "price": 160.0, "active": true}, {"id": 3, "name": "بيتزا دجاج وسط", "category": "بيتزا", "price": 160.0, "active": true}, {"id": 4, "name": "بيتزا دجاج كبير", "category": "بيتزا", "price": 190.0, "active": true}, {"id": 5, "name": "بيتزا خضار وسط", "category": "بيتزا", "price": 130.0, "active": true}, {"id": 6, "name": "بيتزا خضار كبير", "category": "بيتزا", "price": 160.0, "active": true}, {"id": 7, "name": "بيتزا مشكل لحوم وسط", "category": "بيتزا", "price": 120.0, "active": true}, {"id": 8, "name": "بيتزا مشكل لحوم كبير", "category": "بيتزا", "price": 180.0, "active": true}, {"id": 9, "name": "بيتزا بسطرمة وسط", "category": "بيتزا", "price": 190.0, "active": true}, {"id": 10, "name": "بيتزا بسطرمة كبير", "category": "بيتزا", "price": 220.0, "active": true}, {"id": 11, "name": "بيتزا سجق وسط", "category": "بيتزا", "price": 170.0, "active": true}, {"id": 12, "name": "بيتزا سجق كبير", "category": "بيتزا", "price": 200.0, "active": true}, {"id": 13, "name": "بيتزا هوت دوج وسط", "category": "بيتزا", "price": 170.0, "active": true}, {"id": 14, "name": "بيتزا هوت دوج كبير", "category": "بيتزا", "price": 200.0, "active": true}, {"id": 15, "name": "بيتزا سلامي وسط", "category": "بيتزا", "price": 170.0, "active": true}, {"id": 16, "name": "بيتزا سلامي كبير", "category": "بيتزا", "price": 200.0, "active": true}, {"id": 17, "name": "بيتزا تونة وسط", "category": "بيتزا", "price": 190.0, "active": true}, {"id": 18, "name": "بيتزا تونة كبير", "category": "بيتزا", "price": 210.0, "active": true}, {"id": 19, "name": "فطير باللحمة وسط", "category": "فطير", "price": 170.0, "active": true}, {"id": 20, "name": "فطير باللحمة كبير", "category": "فطير", "price": 200.0, "active": true}, {"id": 21, "name": "فطير بالفراخ وسط", "category": "فطير", "price": 170.0, "active": true}, {"id": 22, "name": "فطير بالفراخ كبير", "category": "فطير", "price": 200.0, "active": true}, {"id": 23, "name": "فطير بالسجق وسط", "category": "فطير", "price": 170.0, "active": true}, {"id": 24, "name": "فطير بالسجق كبير", "category": "فطير", "price": 200.0, "active": true}, {"id": 25, "name": "فطير بالسوسيس وسط", "category": "فطير", "price": 170.0, "active": true}, {"id": 26, "name": "فطير بالسوسيس كبير", "category": "فطير", "price": 200.0, "active": true}, {"id": 27, "name": "فطير مشكل لحوم وسط", "category": "فطير", "price": 190.0, "active": true}, {"id": 28, "name": "فطير مشكل لحوم كبير", "category": "فطير", "price": 210.0, "active": true}, {"id": 29, "name": "فطير بالتونة وسط", "category": "فطير", "price": 190.0, "active": true}, {"id": 30, "name": "فطير بالتونة كبير", "category": "فطير", "price": 210.0, "active": true}, {"id": 31, "name": "فطير جبن مشكل وسط", "category": "فطير", "price": 150.0, "active": true}, {"id": 32, "name": "فطير جبن مشكل كبير", "category": "فطير", "price": 180.0, "active": true}, {"id": 33, "name": "فطير كرافت وسط", "category": "فطير", "price": 150.0, "active": true}, {"id": 34, "name": "فطير كرافت كبير", "category": "فطير", "price": 180.0, "active": true}, {"id": 35, "name": "فطير كاستر وسط", "category": "فطير", "price": 100.0, "active": true}, {"id": 36, "name": "فطير كاستر كبير", "category": "فطير", "price": 130.0, "active": true}, {"id": 37, "name": "فطير شيكولاته وسط", "category": "فطير", "price": 130.0, "active": true}, {"id": 38, "name": "فطير شيكولاته كبير", "category": "فطير", "price": 150.0, "active": true}, {"id": 39, "name": "فطير لوتس وسط", "category": "فطير", "price": 130.0, "active": true}, {"id": 40, "name": "فطير لوتس كبير", "category": "فطير", "price": 150.0, "active": true}, {"id": 41, "name": "فطير شيكولاته بندق وسط", "category": "فطير", "price": 150.0, "active": true}, {"id": 42, "name": "فطير شيكولاته بندق كبير", "category": "فطير", "price": 170.0, "active": true}, {"id": 43, "name": "فطير بغاشة وسط", "category": "فطير", "price": 100.0, "active": true}, {"id": 44, "name": "فطير بغاشة كبير", "category": "فطير", "price": 120.0, "active": true}, {"id": 45, "name": "فطير مشلتت سادة وسط", "category": "فطير", "price": 100.0, "active": true}, {"id": 46, "name": "فطير مشلتت سادة كبير", "category": "فطير", "price": 150.0, "active": true}, {"id": 47, "name": "فطير بالعسل والقشطة وسط", "category": "فطير", "price": 190.0, "active": true}, {"id": 48, "name": "فطير بالعسل والقشطة كبير", "category": "فطير", "price": 230.0, "active": true}, {"id": 49, "name": "صاروخ فراخ", "category": "صاروخ", "price": 160.0, "active": true}, {"id": 50, "name": "صاروخ لحمة", "category": "صاروخ", "price": 160.0, "active": true}, {"id": 51, "name": "صاروخ سجق", "category": "صاروخ", "price": 160.0, "active": true}, {"id": 52, "name": "صاروخ مشكل لحوم", "category": "صاروخ", "price": 160.0, "active": true}], "ingredients": [{"id": 1, "name": "دقيق أبيض", "unit": "كجم", "qty": 50.0, "min_qty": 10.0, "cost": 35.0}, {"id": 2, "name": "جبنة موزاريلا", "unit": "كجم", "qty": 20.0, "min_qty": 5.0, "cost": 165.0}, {"id": 3, "name": "لحمة مفروم", "unit": "كجم", "qty": 5.0, "min_qty": 2.0, "cost": 270.0}, {"id": 4, "name": "صدور فراخ", "unit": "كجم", "qty": 10.0, "min_qty": 3.0, "cost": 180.0}, {"id": 5, "name": "فراخ استربس", "unit": "كجم", "qty": 4.0, "min_qty": 1.0, "cost": 210.0}, {"id": 6, "name": "بطاطس بومفريت", "unit": "كجم", "qty": 5.0, "min_qty": 1.0, "cost": 125.0}, {"id": 7, "name": "سوسيس", "unit": "كجم", "qty": 5.0, "min_qty": 1.0, "cost": 225.0}, {"id": 8, "name": "سجق", "unit": "كجم", "qty": 5.0, "min_qty": 1.0, "cost": 205.0}, {"id": 9, "name": "تونة", "unit": "علبة", "qty": 5.0, "min_qty": 1.0, "cost": 50.0}, {"id": 10, "name": "سلامي", "unit": "علبة", "qty": 1.0, "min_qty": 0.5, "cost": 250.0}, {"id": 11, "name": "بسطرمة", "unit": "علبة", "qty": 1.0, "min_qty": 0.5, "cost": 440.0}, {"id": 12, "name": "شيكولاتة نوتلا", "unit": "علبة", "qty": 1.0, "min_qty": 0.5, "cost": 450.0}, {"id": 13, "name": "شيكولاتة لوتس", "unit": "علبة", "qty": 1.0, "min_qty": 0.5, "cost": 450.0}, {"id": 14, "name": "شيكولاتة بيضاء", "unit": "علبة", "qty": 1.0, "min_qty": 0.5, "cost": 450.0}, {"id": 15, "name": "صلصة طماطم", "unit": "كجم", "qty": 15.0, "min_qty": 3.0, "cost": 25.0}, {"id": 16, "name": "دجاج مشوي", "unit": "كجم", "qty": 10.0, "min_qty": 2.0, "cost": 185.0}, {"id": 17, "name": "فلفل ملون", "unit": "كجم", "qty": 5.0, "min_qty": 1.0, "cost": 75.0}, {"id": 18, "name": "مشروم", "unit": "كجم", "qty": 5.0, "min_qty": 1.0, "cost": 90.0}, {"id": 19, "name": "زيتون", "unit": "كجم", "qty": 3.0, "min_qty": 1.0, "cost": 180.0}, {"id": 20, "name": "سمن بلدي", "unit": "كجم", "qty": 10.0, "min_qty": 2.0, "cost": 200.0}, {"id": 21, "name": "عسل", "unit": "كجم", "qty": 5.0, "min_qty": 1.0, "cost": 150.0}, {"id": 22, "name": "جبنة بيضاء", "unit": "كجم", "qty": 15.0, "min_qty": 3.0, "cost": 70.0}, {"id": 23, "name": "طماطم طازجة", "unit": "كجم", "qty": 10.0, "min_qty": 2.0, "cost": 15.0}, {"id": 24, "name": "خس", "unit": "كجم", "qty": 5.0, "min_qty": 1.0, "cost": 12.0}, {"id": 25, "name": "مواد تعبئة", "unit": "علبة", "qty": 50.0, "min_qty": 10.0, "cost": 8.0}, {"id": 26, "name": "غاز الطهي", "unit": "اسطوانة", "qty": 3.0, "min_qty": 1.0, "cost": 200.0}, {"id": 27, "name": "مواد تنظيف", "unit": "قطعة", "qty": 20.0, "min_qty": 5.0, "cost": 15.0}], "recipes": {"بيتزا مارغريتا وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.1, "unit": "كجم"}, {"ingredient": "130", "qty": 46.0, "unit": "84"}], "بيتزا مارغريتا كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "160", "qty": 69.0, "unit": "91"}], "بيتزا دجاج وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.1, "unit": "كجم"}, {"ingredient": "دجاج مشوي", "qty": 0.2, "unit": "كجم"}, {"ingredient": "160", "qty": 83.0, "unit": "77"}], "بيتزا دجاج كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "دجاج مشوي", "qty": 0.3, "unit": "كجم"}, {"ingredient": "190", "qty": 124.5, "unit": "65.5"}], "بيتزا خضار وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.1, "unit": "كجم"}, {"ingredient": "فلفل ملون", "qty": 0.1, "unit": "كجم"}, {"ingredient": "مشروم", "qty": 0.1, "unit": "كجم"}, {"ingredient": "زيتون", "qty": 0.05, "unit": "كجم"}, {"ingredient": "130", "qty": 71.5, "unit": "58.5"}], "بيتزا خضار كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "فلفل ملون", "qty": 0.15, "unit": "كجم"}, {"ingredient": "مشروم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "160", "qty": 93.75, "unit": "66.25"}], "بيتزا مشكل لحوم وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "صدور فراخ", "qty": 0.1, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.05, "unit": "كجم"}, {"ingredient": "120", "qty": 112.25, "unit": "7.75"}], "بيتزا مشكل لحوم كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.2, "unit": "كجم"}, {"ingredient": "صدور فراخ", "qty": 0.15, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.1, "unit": "كجم"}, {"ingredient": "180", "qty": 166.75, "unit": "13.25"}], "بيتزا بسطرمة وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "بسطرمة", "qty": 0.5, "unit": "علبة"}, {"ingredient": "190", "qty": 263.5, "unit": "-73.5"}], "بيتزا بسطرمة كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "بسطرمة", "qty": 1.0, "unit": "علبة"}, {"ingredient": "220", "qty": 505.25, "unit": "-285.25"}], "بيتزا سجق وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.2, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.1, "unit": "كجم"}, {"ingredient": "170", "qty": 87.0, "unit": "83"}], "بيتزا سجق كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.3, "unit": "كجم"}, {"ingredient": "صلصة طماطم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "200", "qty": 130.5, "unit": "69.5"}], "بيتزا سلامي وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "سلامي", "qty": 0.5, "unit": "علبة"}, {"ingredient": "170", "qty": 168.5, "unit": "1.5"}], "بيتزا سلامي كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "سلامي", "qty": 1.0, "unit": "علبة"}, {"ingredient": "200", "qty": 315.25, "unit": "-115.25"}], "بيتزا تونة وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "تونة", "qty": 1.0, "unit": "علبة"}, {"ingredient": "190", "qty": 93.5, "unit": "96.5"}], "بيتزا تونة كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "تونة", "qty": 2.0, "unit": "علبة"}, {"ingredient": "210", "qty": 165.25, "unit": "44.75"}], "بيتزا هوت دوج وسط": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.2, "unit": "كجم"}, {"ingredient": "سوسيس", "qty": 0.2, "unit": "كجم"}, {"ingredient": "170", "qty": 88.5, "unit": "81.5"}], "بيتزا هوت دوج كبير": [{"ingredient": "دقيق أبيض", "qty": 0.45, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.3, "unit": "كجم"}, {"ingredient": "سوسيس", "qty": 0.3, "unit": "كجم"}, {"ingredient": "200", "qty": 132.75, "unit": "67.25"}], "فطير مشلتت سادة وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "100", "qty": 24.0, "unit": "76"}], "فطير مشلتت سادة كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "150", "qty": 37.0, "unit": "113"}], "فطير بالعسل والقشطة وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "عسل", "qty": 0.05, "unit": "كجم"}, {"ingredient": "190", "qty": 31.5, "unit": "158.5"}], "فطير بالعسل والقشطة كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "عسل", "qty": 0.08, "unit": "كجم"}, {"ingredient": "230", "qty": 49.0, "unit": "181"}], "فطير باللحمة وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.2, "unit": "كجم"}, {"ingredient": "170", "qty": 78.0, "unit": "92"}], "فطير باللحمة كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.3, "unit": "كجم"}, {"ingredient": "200", "qty": 118.0, "unit": "82"}], "فطير بالفراخ وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "صدور فراخ", "qty": 0.2, "unit": "كجم"}, {"ingredient": "170", "qty": 60.0, "unit": "110"}], "فطير بالفراخ كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "صدور فراخ", "qty": 0.3, "unit": "كجم"}, {"ingredient": "200", "qty": 91.0, "unit": "109"}], "فطير بالسجق وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.2, "unit": "كجم"}, {"ingredient": "170", "qty": 65.0, "unit": "105"}], "فطير بالسجق كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.3, "unit": "كجم"}, {"ingredient": "200", "qty": 98.5, "unit": "101.5"}], "فطير بالسوسيس وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "سوسيس", "qty": 0.2, "unit": "كجم"}, {"ingredient": "170", "qty": 69.0, "unit": "101"}], "فطير بالسوسيس كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "سوسيس", "qty": 0.3, "unit": "كجم"}, {"ingredient": "200", "qty": 104.5, "unit": "95.5"}], "فطير مشكل لحوم وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "صدور فراخ", "qty": 0.1, "unit": "كجم"}, {"ingredient": "190", "qty": 82.5, "unit": "107.5"}], "فطير مشكل لحوم كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.2, "unit": "كجم"}, {"ingredient": "صدور فراخ", "qty": 0.15, "unit": "كجم"}, {"ingredient": "210", "qty": 118.0, "unit": "92"}], "فطير بالتونة وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "تونة", "qty": 1.0, "unit": "علبة"}, {"ingredient": "190", "qty": 74.0, "unit": "116"}], "فطير بالتونة كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "تونة", "qty": 2.0, "unit": "علبة"}, {"ingredient": "210", "qty": 137.0, "unit": "73"}], "فطير جبن مشكل وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "جبنة بيضاء", "qty": 0.15, "unit": "كجم"}, {"ingredient": "150", "qty": 34.5, "unit": "115.5"}], "فطير جبن مشكل كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "جبنة بيضاء", "qty": 0.25, "unit": "كجم"}, {"ingredient": "180", "qty": 54.5, "unit": "125.5"}], "فطير كرافت وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.15, "unit": "كجم"}, {"ingredient": "150", "qty": 48.75, "unit": "101.25"}], "فطير كرافت كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.25, "unit": "كجم"}, {"ingredient": "180", "qty": 78.25, "unit": "101.75"}], "فطير كاستر وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "100", "qty": 24.0, "unit": "76"}], "فطير كاستر كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "130", "qty": 37.0, "unit": "93"}], "فطير شيكولاته وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "شيكولاتة بيضاء", "qty": 0.3, "unit": "علبة"}, {"ingredient": "130", "qty": 159.0, "unit": "-29"}], "فطير شيكولاته كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "شيكولاتة بيضاء", "qty": 0.5, "unit": "علبة"}, {"ingredient": "150", "qty": 262.0, "unit": "-112"}], "فطير لوتس وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "شيكولاتة لوتس", "qty": 0.3, "unit": "علبة"}, {"ingredient": "130", "qty": 159.0, "unit": "-29"}], "فطير لوتس كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "شيكولاتة لوتس", "qty": 0.5, "unit": "علبة"}, {"ingredient": "150", "qty": 262.0, "unit": "-112"}], "فطير شيكولاته بندق وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "شيكولاتة نوتلا", "qty": 0.3, "unit": "علبة"}, {"ingredient": "150", "qty": 159.0, "unit": "-9"}], "فطير شيكولاته بندق كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "شيكولاتة نوتلا", "qty": 0.5, "unit": "علبة"}, {"ingredient": "170", "qty": 262.0, "unit": "-92"}], "فطير بغاشة وسط": [{"ingredient": "دقيق أبيض", "qty": 0.4, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.05, "unit": "كجم"}, {"ingredient": "100", "qty": 24.0, "unit": "76"}], "فطير بغاشة كبير": [{"ingredient": "دقيق أبيض", "qty": 0.6, "unit": "كجم"}, {"ingredient": "سمن بلدي", "qty": 0.08, "unit": "كجم"}, {"ingredient": "120", "qty": 37.0, "unit": "83"}], "صاروخ فراخ": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "فراخ استربس", "qty": 0.25, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.1, "unit": "كجم"}, {"ingredient": "160", "qty": 79.5, "unit": "80.5"}], "صاروخ لحمة": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.25, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.1, "unit": "كجم"}, {"ingredient": "160", "qty": 94.5, "unit": "65.5"}], "صاروخ سجق": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.2, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.1, "unit": "كجم"}, {"ingredient": "160", "qty": 68.0, "unit": "92"}], "صاروخ مشكل لحوم": [{"ingredient": "دقيق أبيض", "qty": 0.3, "unit": "كجم"}, {"ingredient": "لحمة مفروم", "qty": 0.15, "unit": "كجم"}, {"ingredient": "فراخ استربس", "qty": 0.1, "unit": "كجم"}, {"ingredient": "سجق", "qty": 0.05, "unit": "كجم"}, {"ingredient": "جبنة موزاريلا", "qty": 0.1, "unit": "كجم"}, {"ingredient": "160", "qty": 98.75, "unit": "61.25"}]}, "sales": [{"id": 1, "date": "2026-06-21", "product": "بيتزا دجاج كبير", "qty": 1.0, "price": 190.0, "total": 190.0, "category": "بيتزا", "notes": ""}, {"id": 2, "date": "2026-06-21", "product": "فطير بالتونة وسط", "qty": 1.0, "price": 190.0, "total": 190.0, "category": "فطير", "notes": ""}, {"id": 3, "date": "2026-06-21", "product": "فطير بغاشة وسط", "qty": 2.0, "price": 100.0, "total": 200.0, "category": "فطير", "notes": ""}, {"id": 4, "date": "2026-06-21", "product": "فطير شيكولاته كبير", "qty": 1.0, "price": 150.0, "total": 150.0, "category": "فطير", "notes": ""}, {"id": 5, "date": "2026-06-21", "product": "فطير كاستر وسط", "qty": 1.0, "price": 100.0, "total": 100.0, "category": "فطير", "notes": ""}], "purchases": [], "expenses": [], "invoices":[],"expense_categories": ["إيجار", "رواتب وأجور", "كهرباء وغاز", "مياه", "صيانة ومعدات", "تسويق وإعلان", "مواد تنظيف", "أخرى"], "restaurant": {"name": "GUSTU", "tagline": "Pizza & Turkish Pies", "phone": "", "address": "", "whatsapp": ""}};
+
+
+// ══════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════════════════
+const SB_URL  = 'https://yyjwomvyqcezihmnxuen.supabase.co';
+const SB_KEY  = 'sb_publishable_HarrXIUXc-9v8IaZHL_P5w_NDZ7nD_4';
+const _sb = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+
+// Supabase REST helper
+const sb = {
+  async get(table, params=''){
+    if(!_sb) throw new Error('Supabase not loaded');
+    let q = _sb.from(table).select('*');
+    // parse simple params string
+    if(params.includes('gte.')) {
+      const m = params.match(/([a-z_]+)=gte\.([^&]+)/g)||[];
+      m.forEach(p=>{ const [k,v]=p.split('=gte.'); q=q.gte(k,v); });
+    }
+    if(params.includes('lte.')) {
+      const m = params.match(/([a-z_]+)=lte\.([^&]+)/g)||[];
+      m.forEach(p=>{ const [k,v]=p.split('=lte.'); q=q.lte(k,v); });
+    }
+    if(params.includes('eq.')) {
+      const m = params.match(/([a-z_]+)=eq\.([^&]+)/g)||[];
+      m.forEach(p=>{ const [k,...rest]=p.split('=eq.'); q=q.eq(k,rest.join('=eq.')); });
+    }
+    if(params.includes('order=')) {
+      const m = params.match(/order=([^&]+)/); 
+      if(m){ const [col,dir]=(m[1]||'').split('.'); if(col) q=q.order(col,{ascending:dir!=='desc'}); }
+    }
+    const {data,error} = await q;
+    if(error) throw new Error(error.message);
+    return data||[];
+  },
+  async post(table, data){
+    const {data:d,error} = await _sb.from(table).insert(Array.isArray(data)?data:[data]).select();
+    if(error) throw new Error(error.message);
+    return d||[];
+  },
+  async patch(table, filter, updates){
+    let q = _sb.from(table).update(updates);
+    const m = filter.match(/([a-z_]+)=eq\.(.+)/);
+    if(m) q=q.eq(m[1],m[2]);
+    const {data,error} = await q.select();
+    if(error) throw new Error(error.message);
+    return data||[];
+  },
+  async del(table, filter){
+    let q = _sb.from(table).delete();
+    const m = filter.match(/([a-z_]+)=(?:eq|gt)\.(.+)/);
+    if(m) q = filter.includes('gt.') ? q.gt(m[1],m[2]) : q.eq(m[1],m[2]);
+    const {error} = await q;
+    if(error) throw new Error(error.message);
+    return true;
+  }
+};
+
+// ── Supabase DB functions (replace localStorage) ──────────────────────────
+let C = { products:[], ingredients:[], recipes:[] };
+
+async function loadCache(){
+  const [prods, ings, recs] = await Promise.all([
+    sb.get('products','active=eq.true&order=category.asc'),
+    sb.get('ingredients','order=name.asc'),
+    sb.get('recipes','')
+  ]);
+  C.products    = prods;
+  C.ingredients = ings;
+  C.recipes     = recs;
+}
+
+async function checkAndSeedDB(){
+  // Check if products table is empty → seed it
+  const prods = await sb.get('products','');
+  if(prods.length > 0){ C.products=prods; return; }
+  // Seed products
+  showOvl('رفع البيانات الأولية...');
+  const seedProds = SEED_DATA.products.map(p=>{
+    const {id,...rest}=p; return rest;
+  });
+  const seedIngs = SEED_DATA.ingredients.map(i=>{
+    const {id,...rest}=i; return rest;
+  });
+  // Batch insert
+  for(let i=0;i<seedProds.length;i+=20){
+    await sb.post('products', seedProds.slice(i,i+20));
+  }
+  for(let i=0;i<seedIngs.length;i+=10){
+    await sb.post('ingredients', seedIngs.slice(i,i+10));
+  }
+  // Seed recipes
+  const recRows=[];
+  for(const [pname,items] of Object.entries(SEED_DATA.recipes||{})){
+    items.forEach(r=>recRows.push({product_name:pname,ingredient_name:r.ingredient,qty:r.qty,unit:r.unit||''}));
+  }
+  for(let i=0;i<recRows.length;i+=20){
+    await sb.post('recipes', recRows.slice(i,i+20));
+  }
+  // Seed settings
+  const setRows=[
+    {key:'restaurant_name',value:'GUSTU'},
+    {key:'tagline',value:'Pizza & Turkish Pies'},
+    {key:'phone',value:''},{key:'address',value:''},
+    {key:'hours',value:''}
+  ];
+  try{ await sb.post('settings',setRows); }catch(e){}
+  toast('✅ تم رفع البيانات الأولية بنجاح','tg',4000);
+}
+
+async function initApp(){
+  document.getElementById('dateBadge').textContent=new Date().toLocaleDateString('ar-EG',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  showOvl('جاري الاتصال بقاعدة البيانات...');
+  try {
+    await checkAndSeedDB();
+    await loadCache();
+    hideOvl();
+    document.getElementById('dbInd').textContent='🟢 Online';
+    document.getElementById('dbInd').style.background='rgba(26,122,86,.4)';
+    renderDashboard();
+    toast('✅ متصل بـ Supabase','tg');
+  } catch(e){
+    hideOvl();
+    document.getElementById('dbInd').textContent='🔴 Offline';
+    document.getElementById('dbInd').style.background='rgba(192,57,43,.4)';
+    toast('❌ تعذر الاتصال — '+e.message,'tr',5000);
+    console.error(e);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// DATABASE (localStorage)
+// ══════════════════════════════════════════════════════
+const DB_KEY = 'gustu_pos_db';
+
+function getDB(){ return JSON.parse(localStorage.getItem(DB_KEY)||'null'); }
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+function initDB(){
+  if(getDB()) return;
+  saveDB(SEED_DATA);
+}
+
+// ══ HELPERS ══
+const EGP = v => (+v||0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})+' ج';
+const today = () => new Date().toISOString().split('T')[0];
+const monthStart = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; };
+const weekAgo = () => { const d=new Date(); d.setDate(d.getDate()-6); return d.toISOString().split('T')[0]; };
+const nowId = () => Date.now();
+
+function toast(msg,cls='tb',dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+cls+' show';
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),dur);
+}
+function showOvl(){ document.getElementById('ovl').classList.add('show'); }
+function hideOvl(){ document.getElementById('ovl').classList.remove('show'); }
+
+function kpi(icon,lbl,val,sub,cls=''){
+  return `<div class="kpi ${cls}"><div class="lbl"><span>${icon}</span>${lbl}</div><div class="val">${val}</div><div class="sub">${sub}</div></div>`;
+}
+
+const CH = {};
+function killChart(id){ if(CH[id]){CH[id].destroy();delete CH[id];} }
+const axX = {ticks:{font:{size:10},color:'#718096'},grid:{display:false}};
+const axY = {ticks:{font:{size:10},color:'#718096'},grid:{color:'rgba(0,0,0,.06)'}};
+
+// ══ NAVIGATION ══
+const titles = {
+  dashboard:'لوحة التحكم', pos:'نقطة البيع', sales:'المبيعات',
+  purchases:'المشتريات', expenses:'المصروفات', stock:'المخزن',
+  recipes:'الوصفات', products:'الأصناف والأسعار', reports:'التقارير'
+};
+
+document.querySelectorAll('.nav-item').forEach(n=>{
+  n.addEventListener('click',()=>{
+    const page = n.dataset.page;
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+    n.classList.add('on');
+    document.getElementById('page-'+page).classList.add('on');
+    document.getElementById('pageTitle').textContent = titles[page];
+    loadPage(page);
+  });
+});
+
+function loadPage(p){
+  if(p==='dashboard') renderDashboard();
+  if(p==='pos')       renderPOS();
+  if(p==='sales')     initSales();
+  if(p==='purchases') initPurchases();
+  if(p==='expenses')  initExpenses();
+  if(p==='stock')     renderStock();
+  if(p==='recipes')   renderRecipeList();
+  if(p==='products')  renderProducts();
+  if(p==='settings')  loadSettingsPage();
+  if(p==='analytics') initAnalytics();
+  if(p==='reports')   initReports();
+}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════
+function renderDashboard(){
+  const db = getDB();
+  const ms = monthStart(), td = today(), wa = weekAgo();
+
+  const salMonth = db.sales.filter(s=>s.date>=ms && s.date<=td);
+  const purMonth = db.purchases.filter(p=>p.date>=ms && p.date<=td);
+  const expMonth = db.expenses.filter(e=>e.date>=ms && e.date<=td);
+
+  const rev = salMonth.reduce((a,s)=>a+s.total,0);
+  const cos = purMonth.reduce((a,p)=>a+p.total,0);
+  const exp = expMonth.reduce((a,e)=>a+e.amount,0);
+  const np  = rev - cos - exp;
+
+  document.getElementById('dash-kpis').innerHTML =
+    kpi('💰','مبيعات الشهر',EGP(rev),salMonth.length+' فاتورة','gold')+
+    kpi('🛒','مشتريات الشهر',EGP(cos),'تكاليف الخامات','')+
+    kpi('💸','مصروفات الشهر',EGP(exp),'تشغيلية وإدارية','')+
+    kpi('📈','صافي الربح',EGP(np), np>=0?'هامش '+(rev>0?(np/rev*100).toFixed(1):0)+'%':'خسارة', np>=0?'green':'red');
+
+  // Top products
+  const prod_totals = {};
+  salMonth.forEach(s=>{ prod_totals[s.product]=(prod_totals[s.product]||0)+s.total; });
+  const top = Object.entries(prod_totals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById('dash-top').innerHTML = top.length
+    ? top.map(([name,total],i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">${['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣'][i]}</span>
+            <span style="font-size:12px;font-weight:600">${name}</span>
+          </div>
+          <span style="color:var(--gold);font-weight:700;font-size:12px">${EGP(total)}</span>
+        </div>`).join('')
+    : '<div style="color:var(--text2);font-size:13px;text-align:center;padding:16px">لا توجد مبيعات هذا الشهر</div>';
+
+  // Stock alerts
+  const low = db.ingredients.filter(i=>i.qty<=i.min_qty);
+  document.getElementById('dash-stock').innerHTML = low.length
+    ? low.map(i=>`<div class="alert alert-warn">⚠️ <strong>${i.name}</strong> — متبقي ${i.qty} ${i.unit} (الحد الأدنى: ${i.min_qty})</div>`).join('')
+    : '<div class="alert alert-ok">✅ جميع الخامات بمستويات مناسبة</div>';
+
+  // Summary
+  document.getElementById('dash-summary').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${[['الإيرادات',EGP(rev),'var(--green)'],['(-) المشتريات',EGP(cos),'var(--red)'],
+         ['(-) المصروفات',EGP(exp),'var(--red)'],['صافي الربح',EGP(np),np>=0?'var(--green)':'var(--red)']
+        ].map(([l,v,c])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text2)">${l}</span>
+          <span style="font-size:13px;font-weight:700;color:${c}">${v}</span>
+        </div>`).join('')}
+    </div>`;
+
+  // Week chart
+  const days7 = Array.from({length:7},(_,i)=>{ const d=new Date(); d.setDate(d.getDate()-6+i); return d.toISOString().split('T')[0]; });
+  const week_data = days7.map(d=>db.sales.filter(s=>s.date===d).reduce((a,s)=>a+s.total,0));
+  killChart('chartWeek');
+  CH.chartWeek = new Chart(document.getElementById('chartWeek'),{
+    type:'bar',
+    data:{labels:days7.map(d=>d.slice(5)),
+      datasets:[{data:week_data,backgroundColor:'rgba(201,168,76,.35)',borderColor:'#C9A84C',borderWidth:2,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:axX,y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// POS
+// ══════════════════════════════════════════════════════
+let cart = [];
+let posFilter = 'الكل';
+
+function renderPOS(){
+  const db = getDB();
+  renderOpenInvoices();
+  const cats = ['الكل',...new Set(db.products.map(p=>p.category))];
+  document.getElementById('posCats').innerHTML = cats.map(c=>
+    `<button class="cat-chip ${c===posFilter?'on':''}" onclick="setPosFilter('${c}')">${c}</button>`
+  ).join('');
+  filterProducts();
+  renderCart();
+}
+
+function setPosFilter(cat){ posFilter=cat; renderPOS(); }
+
+function filterProducts(){
+  const db=getDB();
+  const q=document.getElementById('posSearch')?.value.toLowerCase()||'';
+  const prods=C.products.filter(p=>(posFilter==='الكل'||p.category===posFilter)&&(!q||p.name.includes(q)));
+  document.getElementById('posGrid').innerHTML = prods.map(p=>`
+    <div class="prod-btn ${cart.find(c=>c.id===p.id)?'selected':''}" onclick="addToCart(${p.id})">
+      <div class="pname">${p.name}</div>
+      <div class="pcat">${p.category}</div>
+      <div class="pprice">${EGP(p.price)}</div>
+    </div>`).join('');
+}
+
+function addToCart(pid){
+  const p=C.products.find(x=>x.id===pid);
+  if(!p) return;
+  const ex=cart.find(c=>c.id===pid);
+  if(ex) ex.qty++; else cart.push({id:pid,name:p.name,price:p.price,qty:1,category:p.category});
+  renderCart(); filterProducts();
+}
+
+let discType='pct';
+function setDiscType(t){
+  discType=t;
+  document.getElementById('disc-pct-btn').classList.toggle('on',t==='pct');
+  document.getElementById('disc-fixed-btn').classList.toggle('on',t==='fixed');
+  document.getElementById('discLabel').textContent=t==='pct'?'%':'ج';
+  renderCart();
+}
+function clearDiscount(){
+  document.getElementById('discValue').value=0;
+  renderCart();
+}
+function getDiscount(subtotal){
+  const val=+document.getElementById('discValue')?.value||0;
+  if(!val) return 0;
+  if(discType==='pct') return Math.min(subtotal,subtotal*val/100);
+  return Math.min(subtotal,val);
+}
+
+function renderCart(){
+  const el=document.getElementById('cartItems');
+  if(!cart.length){
+    el.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:20px">القائمة فارغة — اضغط على صنف لإضافته</div>';
+    ['cartTotal','cartSubtotal','cartDiscDisplay','discAmount'].forEach(id=>{
+      const el2=document.getElementById(id); if(el2) el2.textContent='0 ج';
+    });
+    const dr=document.getElementById('cartDiscRow'); if(dr) dr.style.display='none';
+    return;
+  }
+  el.innerHTML = cart.map((c,i)=>`
+    <div class="cart-item">
+      <button onclick="removeFromCart(${i})" style="background:#FECACA;color:#991B1B;border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center">✕</button>
+      <div class="cart-name">${c.name}</div>
+      <div class="cart-qty">
+        <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
+        <span style="font-size:13px;font-weight:700;min-width:20px;text-align:center">${c.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
+      </div>
+      <div class="cart-total">${EGP(c.price*c.qty)}</div>
+    </div>`).join('');
+
+  // ✅ CORRECT FORMULA: total = sum(item prices) - discount
+  const subtotal = cart.reduce((a,c)=>a+c.price*c.qty, 0);
+  const discAmt  = getDiscount(subtotal);
+  const total    = subtotal - discAmt;
+
+  document.getElementById('cartSubtotal').textContent = EGP(subtotal);
+  if(discAmt>0){
+    document.getElementById('cartDiscRow').style.display='flex';
+    document.getElementById('cartDiscDisplay').textContent = '- '+EGP(discAmt);
+    document.getElementById('discAmount').textContent = '= '+EGP(discAmt);
+  } else {
+    document.getElementById('cartDiscRow').style.display='none';
+    document.getElementById('discAmount').textContent='';
+  }
+  document.getElementById('cartTotal').textContent = EGP(total);
+}
+
+function removeFromCart(i){
+  cart.splice(i,1);
+  renderCart(); filterProducts();
+  toast('تم حذف الصنف من الفاتورة','tb');
+}
+
+function changeQty(i,d){
+  cart[i].qty+=d;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  renderCart(); filterProducts();
+}
+
+function clearCart(){ cart=[]; document.getElementById('discValue').value=0; renderCart(); filterProducts(); }
+
+function confirmSale(){
+  if(!cart.length){ toast('أضف صنفاً واحداً على الأقل','tr'); return; }
+  const db=getDB(); const notes=document.getElementById('posNotes').value;
+  const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const disc=getDiscount(subtotal);
+  const discVal=+document.getElementById('discValue').value||0;
+  const discNote=discVal>0?(discType==='pct'?` (خصم ${discVal}%)`:(` (خصم ${EGP(discVal)})`)):'';
+  cart.forEach(c=>{
+    const itemTotal=c.price*c.qty;
+    const itemDisc=disc>0?(itemTotal/subtotal)*disc:0;
+    db.sales.push({id:nowId(), date:today(), product:c.name, qty:c.qty,
+      price:c.price, total:+(itemTotal-itemDisc).toFixed(2), category:c.category, notes:notes+discNote});
+    // Deduct stock from recipe
+    const recipe = db.recipes[c.name];
+    if(recipe){ recipe.forEach(r=>{ const ing=db.ingredients.find(i=>i.name===r.ingredient); if(ing) ing.qty=Math.max(0,ing.qty-r.qty*c.qty); }); }
+  });
+  saveDB(db);
+  const total=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  toast(`✅ تم البيع — الإجمالي: ${EGP(total)}`,'tg');
+  cart=[]; document.getElementById('posNotes').value='';
+  renderCart(); filterProducts();
+}
+
+// ══════════════════════════════════════════════════════
+// SALES
+// ══════════════════════════════════════════════════════
+function initSales(){
+  document.getElementById('sal-date').value=today();
+  document.getElementById('sal-from').value=monthStart();
+  document.getElementById('sal-to').value=today();
+  const sel=document.getElementById('sal-prod');
+  sel.innerHTML=C.products.map(p=>`<option value="${p.id}" data-price="${p.price}">${p.name}</option>`).join('');
+  sel.onchange=()=>{ const p=C.products.find(x=>x.id==sel.value); if(p) document.getElementById('sal-price').value=p.price; };
+  if(C.products[0]) document.getElementById('sal-price').value=C.products[0].price;
+  renderSalesTable();
+}
+
+async function addSale(){
+  const pid=+document.getElementById('sal-prod').value;
+  const p=C.products.find(x=>x.id===pid);
+  if(!p){ toast('اختر الصنف','tr'); return; }
+  const qty=+document.getElementById('sal-qty').value;
+  const price=+document.getElementById('sal-price').value;
+  if(!qty||!price){ toast('أدخل الكمية والسعر','tr'); return; }
+  showOvl('حفظ...');
+  try{
+    await sb.post('sales',[{sale_date:document.getElementById('sal-date').value,
+      product:p.name,category:p.category,qty,price,total:qty*price,
+      notes:document.getElementById('sal-notes').value}]);
+    hideOvl(); toast('✅ تم الحفظ','tg'); renderSalesTable();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+async function renderSalesTable(){
+  const from=document.getElementById('sal-from').value;
+  const to=document.getElementById('sal-to').value;
+  try{
+    const rows=await sb.get('sales',`sale_date=gte.${from}&sale_date=lte.${to}&order=sale_date.desc`);
+    const total=rows.reduce((a,s)=>a+s.total,0);
+    document.getElementById('sal-kpis').innerHTML=
+      kpi('💰','إجمالي المبيعات',EGP(total),rows.length+' فاتورة','gold')+
+      kpi('🛒','إجمالي الكمية',rows.reduce((a,s)=>a+s.qty,0).toFixed(0),'قطعة','');
+    document.getElementById('sal-tbl').innerHTML=rows.length
+      ? rows.map(s=>`<tr>
+          <td>${s.sale_date||s.date}</td>
+          <td><strong>${s.product}</strong></td>
+          <td><span class="badge badge-gold">${s.category||''}</span></td>
+          <td>${s.qty}</td><td>${EGP(s.price)}</td>
+          <td><strong style="color:var(--gold)">${EGP(s.total)}</strong></td>
+          <td style="color:var(--text2)">${s.notes||'—'}</td>
+          <td><button class="btn btn-red btn-sm" onclick="delRow('sales',${s.id})">حذف</button></td>
+        </tr>`).join('')
+      : `<tr><td colspan="8" class="tbl-empty">لا توجد مبيعات في هذه الفترة</td></tr>`;
+  }catch(e){toast('خطأ في تحميل المبيعات','tr');}
+}
+
+async function delRow(table,id){
+  if(!confirm('حذف هذا السجل؟')) return;
+  showOvl('حذف...');
+  try{
+    await sb.del(table,`id=eq.${id}`);
+    hideOvl(); toast('🗑 تم الحذف','tb');
+    if(table==='sales') renderSalesTable();
+    if(table==='purchases') renderPurTable();
+    if(table==='expenses') renderExpTable();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+function delSale(id){ delRow('sales',id); }
+
+// ══════════════════════════════════════════════════════
+// PURCHASES
+// ══════════════════════════════════════════════════════
+function initPurchases(){
+  document.getElementById('pur-date').value=today();
+  document.getElementById('pur-from').value=monthStart();
+  document.getElementById('pur-to').value=today();
+  document.getElementById('pur-ing').innerHTML=C.ingredients.map(i=>`<option value="${i.id}">${i.name} (${i.unit})</option>`).join('');
+  renderPurTable();
+}
+
+async function addPurchase(){
+  const iid=+document.getElementById('pur-ing').value;
+  const ing=C.ingredients.find(x=>x.id===iid);
+  if(!ing){ toast('اختر الخامة','tr'); return; }
+  const qty=+document.getElementById('pur-qty').value;
+  const cost=+document.getElementById('pur-cost').value;
+  if(!qty||!cost){ toast('أدخل الكمية والتكلفة','tr'); return; }
+  showOvl('حفظ...');
+  try{
+    await sb.post('purchases',[{purchase_date:document.getElementById('pur-date').value,
+      ingredient:ing.name,qty,unit:ing.unit,cost,total:qty*cost,
+      supplier:document.getElementById('pur-supplier').value}]);
+    const nq=ing.qty+qty;
+    await sb.patch('ingredients',`id=eq.${ing.id}`,{qty:nq,cost});
+    ing.qty=nq; ing.cost=cost;
+    hideOvl(); toast('✅ تم الحفظ وتحديث المخزن','tg'); renderPurTable();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+async function renderPurTable(){
+  const from=document.getElementById('pur-from').value;
+  const to=document.getElementById('pur-to').value;
+  try{
+    const rows=await sb.get('purchases',`purchase_date=gte.${from}&purchase_date=lte.${to}&order=purchase_date.desc`);
+    const total=rows.reduce((a,p)=>a+p.total,0);
+    document.getElementById('pur-kpis').innerHTML=kpi('🛒','إجمالي المشتريات',EGP(total),rows.length+' عملية','');
+    document.getElementById('pur-tbl').innerHTML=rows.length
+      ? rows.map(p=>`<tr>
+          <td>${p.purchase_date||p.date}</td><td><strong>${p.ingredient}</strong></td>
+          <td>${p.qty}</td><td>${p.unit||''}</td><td>${EGP(p.cost)}</td>
+          <td><strong style="color:var(--red)">${EGP(p.total)}</strong></td>
+          <td style="color:var(--text2)">${p.supplier||'—'}</td>
+          <td><button class="btn btn-red btn-sm" onclick="delRow('purchases',${p.id})">حذف</button></td>
+        </tr>`).join('')
+      : `<tr><td colspan="8" class="tbl-empty">لا توجد مشتريات في هذه الفترة</td></tr>`;
+  }catch(e){toast('خطأ في تحميل المشتريات','tr');}
+}
+
+// ══════════════════════════════════════════════════════
+// EXPENSES
+// ══════════════════════════════════════════════════════
+function initExpenses(){
+  document.getElementById('exp-date').value=today();
+  document.getElementById('exp-from').value=monthStart();
+  document.getElementById('exp-to').value=today();
+  document.getElementById('exp-cat').innerHTML=EXP_CATS.map(c=>`<option>${c}</option>`).join('');
+  renderExpTable();
+}
+
+async function addExpense(){
+  const amt=+document.getElementById('exp-amt').value;
+  const desc=document.getElementById('exp-desc').value.trim();
+  if(!amt||!desc){ toast('أدخل البيان والمبلغ','tr'); return; }
+  showOvl('حفظ...');
+  try{
+    await sb.post('expenses',[{expense_date:document.getElementById('exp-date').value,
+      category:document.getElementById('exp-cat').value,description:desc,amount:amt}]);
+    hideOvl(); toast('✅ تم الحفظ','tg'); renderExpTable();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+async function renderExpTable(){
+  const from=document.getElementById('exp-from').value;
+  const to=document.getElementById('exp-to').value;
+  try{
+    const rows=await sb.get('expenses',`expense_date=gte.${from}&expense_date=lte.${to}&order=expense_date.desc`);
+    const total=rows.reduce((a,e)=>a+e.amount,0);
+    document.getElementById('exp-kpis').innerHTML=kpi('💸','إجمالي المصروفات',EGP(total),rows.length+' بند','');
+    document.getElementById('exp-tbl').innerHTML=rows.length
+      ? rows.map(e=>`<tr>
+          <td>${e.expense_date||e.date}</td>
+          <td><span class="badge badge-blue">${e.category}</span></td>
+          <td>${e.description}</td>
+          <td><strong style="color:var(--red)">${EGP(e.amount)}</strong></td>
+          <td><button class="btn btn-red btn-sm" onclick="delRow('expenses',${e.id})">حذف</button></td>
+        </tr>`).join('')
+      : `<tr><td colspan="5" class="tbl-empty">لا توجد مصروفات في هذه الفترة</td></tr>`;
+  }catch(e){toast('خطأ في تحميل المصروفات','tr');}
+}
+
+// ══════════════════════════════════════════════════════
+// STOCK
+// ══════════════════════════════════════════════════════
+async function renderStock(){
+  try{ C.ingredients=await sb.get('ingredients','order=name.asc'); }catch(e){}
+  const total_val=C.ingredients.reduce((a,i)=>a+i.qty*i.cost,0);
+  document.getElementById('stock-val').textContent='إجمالي قيمة المخزون: '+EGP(total_val);
+  document.getElementById('stk-tbl').innerHTML=C.ingredients.map(i=>{
+    const low=i.qty<=i.min_qty;
+    const pct=i.min_qty>0?Math.min(100,i.qty/i.min_qty*50):100;
+    const clr=low?'var(--red)':i.qty>i.min_qty*2?'var(--green)':'#3498DB';
+    return `<tr class="${low?'':''}">
+      <td><strong ${low?'style="color:var(--red)"':''}>${i.name}</strong></td>
+      <td style="color:var(--text2)">${i.unit}</td>
+      <td>
+        <span ${low?'class="stock-low"':''}>${i.qty}</span>
+        <div class="stock-bar"><div class="stock-fill" style="width:${pct}%;background:${clr}"></div></div>
+      </td>
+      <td style="color:var(--text2)">${i.min_qty}</td>
+      <td>${EGP(i.cost)}</td>
+      <td style="color:var(--gold)">${EGP(i.qty*i.cost)}</td>
+      <td>${low?'<span class="badge badge-red">⚠️ منخفض</span>':'<span class="badge badge-green">✅ جيد</span>'}</td>
+      <td>
+        <input type="number" value="${i.qty}" min="0" step="0.1" style="width:80px;font-size:12px;padding:4px 8px"
+          onchange="updateStock(${i.id},+this.value)">
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function addIngredient(){
+  const name=document.getElementById('ing-name').value.trim();
+  if(!name){ toast('أدخل اسم الخامة','tr'); return; }
+  showOvl('إضافة...');
+  try{
+    const r=await sb.post('ingredients',[{name,unit:document.getElementById('ing-unit').value,
+      qty:+document.getElementById('ing-qty').value,min_qty:+document.getElementById('ing-min').value,
+      cost:+document.getElementById('ing-cost').value}]);
+    C.ingredients.push(r[0]);
+    hideOvl(); toast('✅ تمت الإضافة','tg');
+    document.getElementById('ing-name').value=''; renderStock();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+async function updateStock(id,qty){
+  try{
+    await sb.patch('ingredients',`id=eq.${id}`,{qty});
+    const i=C.ingredients.find(x=>x.id===id); if(i) i.qty=qty;
+    toast('✅ تم التحديث','tb');
+  }catch(e){toast('❌ '+e.message,'tr');}
+}
+
+// ══════════════════════════════════════════════════════
+// RECIPES
+// ══════════════════════════════════════════════════════
+let currentRecipe = null;
+
+function renderRecipeList(){
+  document.getElementById('recSearch').value='';
+  filterRecipeList();
+  document.getElementById('rec-ing').innerHTML=C.ingredients.map(i=>`<option value="${i.name}">${i.name} (${i.unit})</option>`).join('');
+}
+
+function filterRecipeList(){
+  const q=document.getElementById('recSearch').value.toLowerCase();
+  const prods=C.products.filter(p=>!q||p.name.includes(q));
+  document.getElementById('rec-list').innerHTML=prods.map(p=>{
+    const r=C.recipes.filter(x=>x.product_name===p.name);
+    const cost=r.reduce((a,ri)=>{ const ing=C.ingredients.find(x=>x.name===ri.ingredient_name); return a+(ing?ing.cost*ri.qty:0); },0);
+    return `<tr>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="badge badge-gold">${p.category}</span></td>
+      <td style="color:${cost>0?'var(--red)':'var(--text2)'}">${cost>0?EGP(cost):'—'}</td>
+      <td><button class="btn btn-gold btn-sm" onclick="editRecipe('${p.name.replace(/'/g,"\\'")}')">✏️ تعديل</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function editRecipe(pname){
+  currentRecipe=pname;
+  document.getElementById('rec-title').textContent='وصفة: '+pname;
+  document.getElementById('rec-editor').style.display='block';
+  renderRecipeItems();
+}
+
+function renderRecipeItems(){
+  const db=getDB(); const items=db.recipes[currentRecipe]||[];
+  const totalCost=items.reduce((a,r)=>{ const i=db.ingredients.find(x=>x.name===r.ingredient); return a+(i?i.cost*r.qty:0); },0);
+  document.getElementById('rec-items').innerHTML=items.length
+    ? items.map((r,i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:13px"><strong>${r.ingredient}</strong> — ${r.qty} ${r.unit}</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="color:var(--text2);font-size:12px">${EGP((db.ingredients.find(x=>x.name===r.ingredient)||{cost:0}).cost*r.qty)}</span>
+            <button class="btn btn-red btn-sm" onclick="removeRecipeItem(${i})">✕</button>
+          </div>
+        </div>`).join('')
+    : '<div style="color:var(--text2);font-size:13px;text-align:center;padding:12px">لا توجد مكونات بعد</div>';
+  document.getElementById('rec-cost').innerHTML=`<div style='background:#FFF8E7;border:1px solid #FCD34D;border-radius:6px;padding:10px'><strong>تكلفة الوصفة:</strong> <span style='color:var(--red);font-weight:700'>${EGP(totalCost)}</span></div>`;
+}
+
+function addRecipeItem(){
+  const db=getDB(); const ing=document.getElementById('rec-ing').value;
+  const qty=+document.getElementById('rec-qty').value;
+  if(!ing||!qty){ toast('اختر الخامة وأدخل الكمية','tr'); return; }
+  if(!db.recipes[currentRecipe]) db.recipes[currentRecipe]=[];
+  const ex=db.recipes[currentRecipe].find(r=>r.ingredient===ing);
+  const ingObj=db.ingredients.find(i=>i.name===ing);
+  if(ex) ex.qty=qty; else db.recipes[currentRecipe].push({ingredient:ing,qty,unit:ingObj?.unit||''});
+  saveDB(db); renderRecipeItems();
+}
+
+function removeRecipeItem(i){
+  const db=getDB(); db.recipes[currentRecipe].splice(i,1);
+  saveDB(db); renderRecipeItems();
+}
+
+function saveRecipe(){ toast('✅ تم حفظ الوصفة','tg'); }
+
+// ══════════════════════════════════════════════════════
+// PRODUCTS
+// ══════════════════════════════════════════════════════
+function renderProducts(){
+  const cats=['الكل',...new Set(C.products.map(p=>p.category))];
+  let prdFilter=document.querySelector('#prd-cats .on')?.textContent||'الكل';
+  document.getElementById('prd-cats').innerHTML=cats.map(c=>
+    `<button class="cat-chip ${c===prdFilter?'on':''}" onclick="setPrdFilter('${c}')">${c}</button>`
+  ).join('');
+  const prods=prdFilter==='الكل'?C.products:C.products.filter(p=>p.category===prdFilter);
+  document.getElementById('prd-tbl').innerHTML=prods.map((p,i)=>`
+    <tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td><strong>${p.name}</strong></td>
+      <td><span class="badge badge-gold">${p.category}</span></td>
+      <td style="color:var(--gold);font-weight:700">${EGP(p.price)}</td>
+      <td>
+        <input type="number" value="${p.price}" min="0" style="width:90px;font-size:12px;padding:4px 8px"
+          onchange="updatePrice(${p.id},+this.value)">
+      </td>
+      <td><button class="btn btn-red btn-sm" onclick="delProduct(${p.id})">🗑</button></td>
+    </tr>`).join('');
+}
+
+function setPrdFilter(cat){
+  document.querySelectorAll('#prd-cats .cat-chip').forEach(c=>c.classList.remove('on'));
+  event.target.classList.add('on');
+  renderProducts();
+}
+
+async function updatePrice(id,price){
+  try{
+    await sb.patch('products',`id=eq.${id}`,{price});
+    const p=C.products.find(x=>x.id===id); if(p) p.price=price;
+    toast('✅ تم تحديث السعر','tg');
+  }catch(e){toast('❌ '+e.message,'tr');}
+}
+
+async function addProduct(){
+  const name=document.getElementById('prd-name').value.trim();
+  if(!name){ toast('أدخل اسم الصنف','tr'); return; }
+  showOvl('إضافة...');
+  try{
+    const r=await sb.post('products',[{name,category:document.getElementById('prd-cat').value,
+      price:+document.getElementById('prd-price').value,active:true}]);
+    C.products.push(r[0]);
+    hideOvl(); toast('✅ تمت الإضافة','tg');
+    document.getElementById('prd-name').value=''; document.getElementById('prd-price').value='';
+    renderProducts();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+async function delProduct(id){
+  if(!confirm('حذف هذا الصنف؟')) return;
+  try{
+    await sb.patch('products',`id=eq.${id}`,{active:false});
+    C.products=C.products.filter(p=>p.id!==id);
+    toast('🗑 تم الحذف','tb'); renderProducts();
+  }catch(e){toast('❌ '+e.message,'tr');}
+}
+
+// ══════════════════════════════════════════════════════
+// REPORTS
+// ══════════════════════════════════════════════════════
+function initReports(){
+  document.getElementById('rep-from').value=monthStart();
+  document.getElementById('rep-to').value=today();
+  document.getElementById('rep-year').value=new Date().getFullYear();
+  renderReports(); renderMonthly();
+}
+
+function renderReports(){
+  const db=getDB();
+  const from=document.getElementById('rep-from').value;
+  const to=document.getElementById('rep-to').value;
+  const sals=db.sales.filter(s=>s.date>=from&&s.date<=to);
+  const purs=db.purchases.filter(p=>p.date>=from&&p.date<=to);
+  const exps=db.expenses.filter(e=>e.date>=from&&e.date<=to);
+  const rev=sals.reduce((a,s)=>a+s.total,0);
+  const cos=purs.reduce((a,p)=>a+p.total,0);
+  const exp=exps.reduce((a,e)=>a+e.amount,0);
+  const gp=rev-cos; const np=gp-exp;
+
+  document.getElementById('rep-kpis').innerHTML=
+    kpi('💰','الإيرادات',EGP(rev),'إجمالي المبيعات','gold')+
+    kpi('🛒','التكاليف',EGP(cos),'المشتريات','')+
+    kpi('💸','المصروفات',EGP(exp),'تشغيلية','')+
+    kpi('📊','إجمالي الربح',EGP(gp),(rev>0?(gp/rev*100).toFixed(1):0)+'%','blue')+
+    kpi('🏆','صافي الربح',EGP(np),(rev>0?(np/rev*100).toFixed(1):0)+'%',np>=0?'green':'red');
+
+  document.getElementById('rep-pnl').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${[['الإيرادات الإجمالية',EGP(rev),'var(--green)',false],
+         ['(-) تكلفة المشتريات',EGP(cos),'var(--red)',false],
+         ['إجمالي الربح',EGP(gp)+(rev>0?' ('+( gp/rev*100).toFixed(1)+'%)':''),'var(--gold)',true],
+         ['(-) المصروفات',EGP(exp),'var(--red)',false],
+         ['صافي الربح',EGP(np)+(rev>0?' ('+( np/rev*100).toFixed(1)+'%)':''),np>=0?'var(--green)':'var(--red)',true],
+        ].map(([l,v,c,b])=>`
+        <div style="display:flex;justify-content:space-between;padding:${b?'12px 8px':'9px 8px'};border-bottom:1px solid var(--border);${b?'background:var(--navy);border-radius:6px;':''}">
+          <span style="font-size:13px;font-weight:${b?700:400};color:var(--text${b?'':2})">${l}</span>
+          <span style="font-size:13px;font-weight:700;color:${c}">${v}</span>
+        </div>`).join('')}
+    </div>`;
+
+  // Top products chart
+  const pt={};
+  sals.forEach(s=>{pt[s.product]=(pt[s.product]||0)+s.total;});
+  const tops=Object.entries(pt).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  killChart('rep-chart');
+  if(tops.length) CH['rep-chart']=new Chart(document.getElementById('rep-chart'),{
+    type:'bar', indexAxis:'y',
+    data:{labels:tops.map(x=>x[0]),datasets:[{data:tops.map(x=>x[1]),
+      backgroundColor:['rgba(201,168,76,.8)','rgba(201,168,76,.65)','rgba(201,168,76,.5)','rgba(201,168,76,.4)','rgba(201,168,76,.3)','rgba(201,168,76,.2)'],
+      borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{...axX,ticks:{...axX.ticks,callback:v=>v+' ج'}},y:{...axY,grid:{display:false}}}}
+  });
+
+  // Daily chart
+  const days=[]; let cur=new Date(from);
+  while(cur.toISOString().split('T')[0]<=to){ days.push(cur.toISOString().split('T')[0]); const n=new Date(cur); n.setDate(n.getDate()+1); cur=n; }
+  const daily=days.map(d=>sals.filter(s=>s.date===d).reduce((a,s)=>a+s.total,0));
+  killChart('rep-daily');
+  CH['rep-daily']=new Chart(document.getElementById('rep-daily'),{
+    type:'line',
+    data:{labels:days.map(d=>d.slice(5)),datasets:[{data:daily,borderColor:'#C9A84C',backgroundColor:'rgba(201,168,76,.08)',fill:true,tension:.35,pointRadius:3,borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{...axX},y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}
+  });
+
+  // Expenses pie
+  const ec={};
+  exps.forEach(e=>{ec[e.category]=(ec[e.category]||0)+e.amount;});
+  const eck=Object.keys(ec); const ecv=eck.map(k=>ec[k]);
+  killChart('rep-exp-chart');
+  if(eck.length) CH['rep-exp-chart']=new Chart(document.getElementById('rep-exp-chart'),{
+    type:'doughnut',
+    data:{labels:eck,datasets:[{data:ecv,backgroundColor:['#C9A84C','#1A7A56','#2980B9','#C0392B','#8E44AD','#E67E22','#1ABC9C','#95A5A6'],borderWidth:0,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#8BAABF',font:{size:10},padding:8}}}}
+  });
+}
+
+function renderMonthly(){
+  const db=getDB(); const yr=+document.getElementById('rep-year').value;
+  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  document.getElementById('rep-monthly').innerHTML=months.map((m,i)=>{
+    const mn=String(i+1).padStart(2,'0');
+    const pfx=`${yr}-${mn}`;
+    const rev=db.sales.filter(s=>s.date.startsWith(pfx)).reduce((a,s)=>a+s.total,0);
+    const cos=db.purchases.filter(p=>p.date.startsWith(pfx)).reduce((a,p)=>a+p.total,0);
+    const exp=db.expenses.filter(e=>e.date.startsWith(pfx)).reduce((a,e)=>a+e.amount,0);
+    const gp=rev-cos; const np=gp-exp;
+    return `<tr>
+      <td><strong>${m}</strong></td>
+      <td style="color:var(--gold)">${rev>0?EGP(rev):'—'}</td>
+      <td style="color:var(--red)">${cos>0?EGP(cos):'—'}</td>
+      <td style="color:var(--red)">${exp>0?EGP(exp):'—'}</td>
+      <td>${gp>0?`<span style="color:var(--blue)">${EGP(gp)}</span>`:'—'}</td>
+      <td>${rev>0?`<span style="color:${np>=0?'var(--green)':'var(--red)'};font-weight:700">${EGP(np)}</span>`:'—'}</td>
+      <td>${rev>0?`${(np/rev*100).toFixed(1)}%`:'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+
+
+
+
+// ══════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════
+const DEFAULT_USERS = [{username:'admin',password:'gustu2024',role:'admin',name:'المدير'}];
+const AUTH_KEY = 'gustu_auth';
+const USERS_KEY = 'gustu_users';
+let currentUser = null;
+
+function getUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY)||'null') || DEFAULT_USERS; }
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const users = getUsers();
+  const found = users.find(x=>x.username===u && x.password===p);
+  if(!found){
+    document.getElementById('loginErr').textContent = '❌ اسم المستخدم أو كلمة المرور غلط';
+    document.getElementById('loginPass').value='';
+    return;
+  }
+  currentUser = found;
+  localStorage.setItem(AUTH_KEY, JSON.stringify({username:found.username,time:Date.now()}));
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('loginErr').textContent='';
+  // Show username in topbar
+  // Remove old chip if exists
+  document.querySelector('[data-userchip]')?.remove();
+  document.getElementById('dateBadge').insertAdjacentHTML('beforebegin',
+    `<span data-userchip style="font-size:12px;color:#1B2E4B;background:#F0F4FF;padding:4px 12px;border-radius:20px;border:1px solid #DBEAFE;font-weight:600">👤 ${found.name}</span>`
+  );
+  initApp();
+}
+
+function doLogout(){
+  if(!confirm('هل تريد تسجيل الخروج؟')) return;
+  currentUser=null;
+  localStorage.removeItem(AUTH_KEY);
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginScreen').style.display='flex';
+  document.querySelector('[data-userchip]')?.remove();
+}
+
+function checkAutoLogin(){
+  const saved=JSON.parse(localStorage.getItem(AUTH_KEY)||'null');
+  if(!saved) return false;
+  // Auto-login valid for 8 hours
+  if(Date.now()-saved.time > 8*60*60*1000){ localStorage.removeItem(AUTH_KEY); return false; }
+  const users=getUsers();
+  const found=users.find(x=>x.username===saved.username);
+  if(!found) return false;
+  currentUser=found;
+  document.getElementById('loginScreen').style.display='none';
+  return true;
+}
+
+function changePassword(){
+  const np=document.getElementById('newPwd').value;
+  const cp=document.getElementById('confirmPwd').value;
+  if(!np){ toast('أدخل كلمة المرور الجديدة','tr'); return; }
+  if(np!==cp){ toast('كلمتا المرور غير متطابقتين','tr'); return; }
+  if(np.length<4){ toast('كلمة المرور قصيرة جداً — 4 أحرف على الأقل','tr'); return; }
+  const users=getUsers();
+  const idx=users.findIndex(x=>x.username===currentUser?.username);
+  if(idx>=0){ users[idx].password=np; saveUsers(users); }
+  document.getElementById('newPwd').value='';
+  document.getElementById('confirmPwd').value='';
+  toast('✅ تم تغيير كلمة المرور — ستُطلب عند تسجيل الدخول القادم','tg',4000);
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS PAGE
+// ══════════════════════════════════════════════════════
+async function loadSettingsPage(){
+  try{
+    const rows=await sb.get('settings','');
+    const s={}; rows.forEach(r=>s[r.key]=r.value);
+    if(document.getElementById('set-name')){
+      document.getElementById('set-name').value=s.restaurant_name||'GUSTU';
+      document.getElementById('set-phone').value=s.phone||'';
+      document.getElementById('set-addr').value=s.address||'';
+      document.getElementById('set-hours').value=s.hours||'';
+    }
+  }catch(e){}
+  renderUsersList();
+}
+
+function renderUsersList(){
+  const users=getUsers();
+  const el=document.getElementById('usersList');
+  if(!el) return;
+  el.innerHTML=users.map(u=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#F8FAFC;border-radius:6px;margin-bottom:6px;font-size:13px">
+      <span style="font-size:16px">👤</span>
+      <div style="flex:1"><strong>${u.name}</strong><br><span style="color:var(--text2);font-size:11px">${u.username} · ${u.role}</span></div>
+    </div>`).join('');
+}
+
+async function saveRestaurantSettings(){
+  const vals=[
+    {key:'restaurant_name',value:document.getElementById('set-name').value},
+    {key:'phone',value:document.getElementById('set-phone').value},
+    {key:'address',value:document.getElementById('set-addr').value},
+    {key:'hours',value:document.getElementById('set-hours').value},
+  ];
+  showOvl('حفظ...');
+  try{
+    for(const v of vals) await sb.patch('settings',`key=eq.${v.key}`,{value:v.value});
+    hideOvl(); toast('✅ تم حفظ بيانات المطعم','tg');
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+
+// ══════════════════════════════════════════════════════
+// DATABASE EXPORT / IMPORT / BRANCH
+// ══════════════════════════════════════════════════════
+function exportDB(){
+  const db = getDB();
+  const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `GUSTU_DB_${db.restaurant?.name||'backup'}_${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ تم تصدير قاعدة البيانات بنجاح', 'tg');
+}
+
+function importDB(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(!confirm('⚠️ هذا سيستبدل كل البيانات الحالية بالملف الجديد.\n\nهل أنت متأكد؟')) {
+    input.value=''; return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Validate it's a GUSTU db
+      if(!data.products || !data.sales){
+        toast('❌ الملف غير صالح — تأكد أنه ملف GUSTU DB', 'tr'); return;
+      }
+      saveDB(data);
+      toast('✅ تم الاستيراد بنجاح — البيانات محدّثة', 'tg', 4000);
+      loadSettingsPage();
+      renderDashboard();
+    } catch(err){
+      toast('❌ خطأ في قراءة الملف', 'tr');
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+function copyForBranch(){
+  if(!confirm('سيتم إنشاء نسخة جديدة تحتوي على الأصناف والأسعار والخامات فقط — بدون أي مبيعات أو مشتريات أو مصروفات.\n\nهل تريد المتابعة؟')) return;
+  const db = getDB();
+  const newDB = {
+    ...db,
+    sales: [],
+    purchases: [],
+    expenses: [],
+    invoices: [],
+    restaurant: {
+      ...db.restaurant,
+      name: db.restaurant?.name + ' — فرع جديد'
+    }
+  };
+  const blob = new Blob([JSON.stringify(newDB, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `GUSTU_Branch_${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ تم تصدير ملف الفرع الجديد — استورده على الجهاز الجديد', 'tg', 5000);
+}
+
+function newBrand(){
+  if(!confirm('⚠️ سيتم إنشاء قاعدة بيانات جديدة فارغة تماماً (بدون أصناف أو بيانات).\n\nالبيانات الحالية لن تتأثر — ستُصدَّر فقط ملف فارغ.')) return;
+  const emptyDB = {
+    products: [], ingredients: [], recipes: {},
+    sales: [], purchases: [], expenses: [], invoices: [],
+    expense_categories: ['إيجار','رواتب وأجور','كهرباء وغاز','مياه','صيانة ومعدات','تسويق وإعلان','مواد تنظيف','أخرى'],
+    restaurant: {name:'اسم المطعم الجديد',tagline:'',phone:'',address:'',hours:'',whatsapp:''}
+  };
+  const blob = new Blob([JSON.stringify(emptyDB, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `GUSTU_NewBrand_${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ تم تصدير ملف البراند الجديد الفارغ', 'tg', 4000);
+}
+
+// ══════════════════════════════════════════════════════
+// RESET / CLEAR DATA
+// ══════════════════════════════════════════════════════
+const RESET_NAMES = {
+  sales:'المبيعات', purchases:'المشتريات',
+  expenses:'المصروفات', invoices:'الفواتير المفتوحة'
+};
+
+const RESET_NAMES={sales:'المبيعات',purchases:'المشتريات',expenses:'المصروفات',invoices:'الفواتير المفتوحة'};
+async function resetSection(section){
+  const name=RESET_NAMES[section]||section;
+  if(!confirm(`⚠️ تصفير ${name}؟\nلا يمكن التراجع.`)) return;
+  showOvl('تصفير...');
+  try{await sb.del(section,'id=gt.0');hideOvl();toast(`✅ تم تصفير ${name}`,'tb');renderDashboard();}
+  catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+async function resetAll(){
+  if(!confirm('⚠️ تصفير كامل؟\nسيتم حذف المبيعات والمشتريات والمصروفات.')) return;
+  const code=prompt('اكتب RESET للتأكيد:');
+  if(code!=='RESET'){toast('تم الإلغاء','tb');return;}
+  showOvl('تصفير كامل...');
+  try{
+    await Promise.all([sb.del('sales','id=gt.0'),sb.del('purchases','id=gt.0'),sb.del('expenses','id=gt.0'),sb.del('invoices','id=gt.0')]);
+    hideOvl(); toast('✅ تم التصفير الكامل','tg',5000); renderDashboard();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+// ══════════════════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════════════════
+function initAnalytics(){
+  const ms=monthStart(), td=today();
+  document.getElementById('an-from').value=ms;
+  document.getElementById('an-to').value=td;
+  renderAnalytics();
+}
+
+function renderAnalytics(){
+  const db=getDB();
+  const from=document.getElementById('an-from').value;
+  const to=document.getElementById('an-to').value;
+  const sals=db.sales.filter(s=>s.date>=from&&s.date<=to);
+
+  // KPIs
+  const rev=sals.reduce((a,s)=>a+s.total,0);
+  const qty=sals.reduce((a,s)=>a+s.qty,0);
+  const uniq_prods=new Set(sals.map(s=>s.product)).size;
+  const avg_ticket=sals.length?rev/sals.length:0;
+
+  // Detect discounts from notes
+  const disc_total=sals.reduce((a,s)=>{
+    const m=(s.notes||'').match(/خصم ([\d.]+)%/);
+    const mf=(s.notes||'').match(/خصم ([\d.]+) ج/);
+    if(m) return a+s.total*(+m[1]/100);
+    if(mf) return a+Math.min(s.total,+mf[1]);
+    return a;
+  },0);
+
+  document.getElementById('an-kpis').innerHTML=
+    kpi('💰','إجمالي الإيرادات',EGP(rev),sals.length+' فاتورة','gold')+
+    kpi('🛒','إجمالي الكميات',qty.toFixed(0),'قطعة مباعة','blue')+
+    kpi('🏷️','متوسط الفاتورة',EGP(avg_ticket),uniq_prods+' صنف مختلف','')+
+    kpi('💸','إجمالي الخصومات',EGP(disc_total),rev>0?(disc_total/rev*100).toFixed(1)+'% من الإيرادات':'0%','red');
+
+  // By category chart
+  const cats={};
+  sals.forEach(s=>{ cats[s.category]=(cats[s.category]||0)+s.total; });
+  const catK=Object.keys(cats).filter(Boolean);
+  killChart('an-cat-chart');
+  if(catK.length){
+    CH['an-cat-chart']=new Chart(document.getElementById('an-cat-chart'),{
+      type:'doughnut',
+      data:{labels:catK,datasets:[{data:catK.map(k=>cats[k]),
+        backgroundColor:['#1B2E4B','#C9A84C','#1A7A56','#C0392B','#2980B9'],borderWidth:0,hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+        plugins:{legend:{position:'bottom',labels:{color:'#718096',font:{size:11},padding:10}}}}
+    });
+  }
+
+  // By day of week chart
+  const days_ar=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const day_totals=Array(7).fill(0);
+  sals.forEach(s=>{ const d=new Date(s.date).getDay(); day_totals[d]+=s.total; });
+  killChart('an-day-chart');
+  CH['an-day-chart']=new Chart(document.getElementById('an-day-chart'),{
+    type:'bar',
+    data:{labels:days_ar,datasets:[{data:day_totals,
+      backgroundColor:day_totals.map(v=>v===Math.max(...day_totals)?'#1B2E4B':'rgba(27,46,75,.3)'),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{...axX},y:{...axY,ticks:{...axY.ticks,callback:v=>v+' ج'}}}}
+  });
+
+  // Products detail table
+  const prod_map={};
+  sals.forEach(s=>{
+    if(!prod_map[s.product]) prod_map[s.product]={name:s.product,cat:s.category,qty:0,total:0,disc:0,count:0};
+    prod_map[s.product].qty+=s.qty;
+    prod_map[s.product].total+=s.total;
+    prod_map[s.product].count++;
+    // detect discount
+    const m=(s.notes||'').match(/خصم ([\d.]+)%/);
+    const mf=(s.notes||'').match(/خصم ([\d.]+) ج/);
+    if(m) prod_map[s.product].disc+=s.total*(+m[1]/100);
+    else if(mf) prod_map[s.product].disc+=Math.min(s.total,+mf[1]);
+  });
+  const prods_sorted=Object.values(prod_map).sort((a,b)=>b.total-a.total);
+  document.getElementById('an-tbl').innerHTML=prods_sorted.length
+    ? prods_sorted.map((p,i)=>`<tr>
+        <td style="color:var(--text2)">${i+1}</td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="badge badge-gold">${p.cat||'—'}</span></td>
+        <td style="font-weight:700">${p.qty.toFixed(1)}</td>
+        <td style="color:var(--text2)">${p.qty>0?EGP(p.total/p.qty):EGP(0)}</td>
+        <td style="color:#1B2E4B;font-weight:700">${EGP(p.total)}</td>
+        <td style="color:var(--red)">${p.disc>0?'- '+EGP(p.disc):'—'}</td>
+        <td><div style="display:flex;align-items:center;gap:6px">
+          <div style="width:60px;height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden">
+            <div style="height:100%;background:#1B2E4B;width:${rev>0?(p.total/rev*100).toFixed(1):0}%"></div>
+          </div>
+          <span style="font-size:11px">${rev>0?(p.total/rev*100).toFixed(1):0}%</span>
+        </div></td>
+      </tr>`)
+      .join('')
+    : '<tr><td colspan="8" class="tbl-empty">لا توجد مبيعات في هذه الفترة</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════
+// INVOICE PREVIEW & PRINT
+// ══════════════════════════════════════════════════════
+function previewInvoice(){
+  if(!cart.length){ toast('الفاتورة فارغة','tr'); return; }
+  const subtotal=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const discAmt=getDiscount(subtotal);
+  const total=subtotal-discAmt;
+  const invNum='INV-'+today().replace(/-/g,'')+'-'+String(nowId()).slice(-4);
+  const db=getDB();
+
+  const rows=cart.map(c=>`
+    <tr>
+      <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${c.name}</td>
+      <td style="padding:8px;border-bottom:1px solid #eee;text-align:center">${c.qty}</td>
+      <td style="padding:8px;border-bottom:1px solid #eee;text-align:center">${EGP(c.price)}</td>
+      <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;font-weight:700">${EGP(c.price*c.qty)}</td>
+    </tr>`).join('');
+
+  document.getElementById('invPreviewContent').innerHTML=`
+    <div style="text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid #1B2E4B">
+      <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:28px;color:#1B2E4B">Gustu</div>
+      <div style="font-size:12px;color:#718096">Pizza & Turkish Pies</div>
+      ${db.restaurant?.phone?`<div style="font-size:12px;color:#718096">📞 ${db.restaurant.phone}</div>`:''}
+      ${db.restaurant?.address?`<div style="font-size:12px;color:#718096">📍 ${db.restaurant.address}</div>`:''}
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:14px;font-size:13px">
+      <div><strong style="color:#1B2E4B">رقم الفاتورة:</strong><br>${invNum}</div>
+      <div style="text-align:left"><strong style="color:#1B2E4B">التاريخ:</strong><br>${today()}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:13px;direction:rtl">
+      <thead>
+        <tr style="background:#1B2E4B;color:#C9A84C">
+          <th style="padding:8px;text-align:right">الصنف</th>
+          <th style="padding:8px;text-align:center">الكمية</th>
+          <th style="padding:8px;text-align:center">السعر</th>
+          <th style="padding:8px;text-align:center">الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="border-top:2px solid #1B2E4B;padding-top:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px">
+        <span style="color:#718096">المجموع:</span>
+        <span style="font-weight:700">${EGP(subtotal)}</span>
+      </div>
+      ${discAmt>0?`<div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px;color:#C0392B">
+        <span>الخصم:</span><span>- ${EGP(discAmt)}</span>
+      </div>`:''}
+      <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:16px;font-weight:800;color:#1B2E4B;border-top:1px dashed #ddd;margin-top:6px">
+        <span>الإجمالي النهائي:</span>
+        <span style="color:#1B2E4B">${EGP(total)}</span>
+      </div>
+    </div>
+    ${document.getElementById('posNotes').value?`<div style="margin-top:12px;padding:8px;background:#FFF8E7;border-radius:6px;font-size:12px;color:#92400E">ملاحظات: ${document.getElementById('posNotes').value}</div>`:''}
+    <div style="text-align:center;margin-top:20px;font-size:12px;color:#718096;border-top:1px dashed #ddd;padding-top:12px">
+      شكراً لزيارتكم — نراكم مرة أخرى 🍕
+    </div>`;
+
+  document.getElementById('invModal').style.display='flex';
+}
+
+function printInvoice(){
+  const content=document.getElementById('invPreviewContent').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Cairo',sans-serif;padding:20px;max-width:400px;margin:0 auto;direction:rtl}@media print{@page{size:A5;margin:1cm}}</style>
+    </head><body>${content}<script>setTimeout(()=>{window.print();window.close()},400)<\/script></body></html>`);
+  w.document.close();
+}
+
+// ══════════════════════════════════════════════════════
+// INVOICE SYSTEM
+// ══════════════════════════════════════════════════════
+async function saveOpenInvoice(){
+  if(!cart.length){toast('الفاتورة فارغة','tr');return;}
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const disc=getDiscount(sub);
+  showOvl('حفظ مؤقت...');
+  try{
+    await sb.post('invoices',[{invoice_date:today(),items:JSON.stringify(cart),
+      subtotal:sub,discount_amount:disc,discount_type:discType,
+      discount_value:+document.getElementById('discValue').value||0,
+      total:sub-disc,notes:document.getElementById('posNotes').value,status:'open'}]);
+    hideOvl(); clearCart(); toast('🔖 تم الحفظ المؤقت','tb'); renderOpenInvoices();
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+async function renderOpenInvoices(){
+  try{
+    const open=await sb.get('invoices','status=eq.open&order=created_at.desc');
+    const wrap=document.getElementById('openInvoicesWrap');
+    const list=document.getElementById('openInvoicesList');
+    if(!wrap||!list) return;
+    if(!open.length){wrap.style.display='none';return;}
+    wrap.style.display='block';
+    list.innerHTML=open.map(inv=>{
+      const items=typeof inv.items==='string'?JSON.parse(inv.items):inv.items;
+      return `<div style="display:flex;align-items:center;gap:6px;padding:7px 8px;background:#F8FAFC;border:1px solid var(--border);border-radius:6px;margin-bottom:5px;font-size:12px">
+        <div style="flex:1"><div style="font-weight:700">#${String(inv.id).slice(-4)} — ${items.length} صنف</div>
+          <div style="color:var(--text2)">${inv.invoice_date} · ${EGP(inv.total)}</div></div>
+        <button class="btn btn-outline btn-sm" onclick="loadInvoice(${inv.id})">📂 فتح وتعديل</button>
+        <button class="btn btn-red btn-sm" onclick="deleteInvoice(${inv.id})">🗑️</button>
+      </div>`;}).join('');
+  }catch(e){}
+}
+
+function loadInvoice(id){
+  const db=getDB();
+  const inv=(db.invoices||[]).find(i=>i.id===id);
+  if(!inv) return;
+  cart=JSON.parse(JSON.stringify(inv.items));
+  discType=inv.discType||'pct';
+  document.getElementById('discValue').value=inv.discValue||0;
+  document.getElementById('posNotes').value=inv.notes||'';
+  setDiscType(discType);
+  renderCart();
+  filterProducts();
+  // Mark as loaded (keep open so user can continue editing)
+  toast('📂 تم فتح الفاتورة — يمكنك إضافة أصناف جديدة','tb');
+}
+
+function deleteInvoice(id){
+  const db=getDB();
+  db.invoices=(db.invoices||[]).filter(i=>i.id!==id);
+  saveDB(db); renderOpenInvoices();
+  toast('🗑 تم حذف الفاتورة','tb');
+}
+
+// Override confirmSale to also remove from open invoices
+const _origConfirmSale = window.confirmSale;
+
+// ══════════════════════════════════════════════════════
+// EXPORT & PRINT
+// ══════════════════════════════════════════════════════
+async function exportExcel(){
+  showOvl('تصدير البيانات...');
+  try{
+    const yr=new Date().getFullYear();
+    const [sals,purs,exps]=await Promise.all([
+      sb.get('sales','order=sale_date.desc'),
+      sb.get('purchases','order=purchase_date.desc'),
+      sb.get('expenses','order=expense_date.desc')
+    ]);
+    hideOvl();
+    const wb=XLSX.utils.book_new();
+    const ws=rows=>XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb,ws([['التاريخ','الصنف','التصنيف','الكمية','السعر','الإجمالي','الخصم','ملاحظات'],
+      ...sals.map(s=>[s.sale_date,s.product,s.category,s.qty,s.price,s.total,s.discount_amount||0,s.notes||''])]),'المبيعات');
+    XLSX.utils.book_append_sheet(wb,ws([['التاريخ','الخامة','الكمية','الوحدة','التكلفة','الإجمالي','المورد'],
+      ...purs.map(p=>[p.purchase_date,p.ingredient,p.qty,p.unit,p.cost,p.total,p.supplier||''])]),'المشتريات');
+    XLSX.utils.book_append_sheet(wb,ws([['التاريخ','التصنيف','البيان','المبلغ'],
+      ...exps.map(e=>[e.expense_date,e.category,e.description,e.amount])]),'المصروفات');
+    XLSX.utils.book_append_sheet(wb,ws([['الخامة','الوحدة','الكمية','الحد الأدنى','التكلفة','القيمة'],
+      ...C.ingredients.map(i=>[i.name,i.unit,i.qty,i.min_qty,i.cost,i.qty*i.cost])]),'المخزن');
+    XLSX.utils.book_append_sheet(wb,ws([['الصنف','التصنيف','السعر'],
+      ...C.products.map(p=>[p.name,p.category,p.price])]),'الأصناف');
+    const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    XLSX.utils.book_append_sheet(wb,ws([['الشهر','المبيعات','المشتريات','المصروفات','إجمالي الربح','صافي الربح','هامش %'],
+      ...months.map((m,i)=>{
+        const mn=String(i+1).padStart(2,'0'),pfx=`${yr}-${mn}`;
+        const rev=sals.filter(s=>s.sale_date.startsWith(pfx)).reduce((a,s)=>a+s.total,0);
+        const cos=purs.filter(p=>p.purchase_date.startsWith(pfx)).reduce((a,p)=>a+p.total,0);
+        const exp=exps.filter(e=>e.expense_date.startsWith(pfx)).reduce((a,e)=>a+e.amount,0);
+        const gp=rev-cos,np=gp-exp;
+        return [m,rev,cos,exp,gp,np,rev>0?+(np/rev*100).toFixed(1):0];
+      })]),'التقارير الشهرية');
+    XLSX.writeFile(wb,`GUSTU_Report_${today()}.xlsx`);
+    toast('📊 تم تصدير Excel بنجاح','tg');
+  }catch(e){hideOvl();toast('❌ '+e.message,'tr');}
+}
+
+function printReport(){
+  window.print();
+  toast('🖨️ جاري الطباعة...', 'tb');
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+document.getElementById('dateBadge').textContent = new Date().toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+if(checkAutoLogin()){
+  initApp();
+}
+// Press Enter to login
+document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('loginPass').focus(); });
+</script>
